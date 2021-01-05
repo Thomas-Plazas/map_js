@@ -4,7 +4,7 @@
       <meta charset="utf-8">
       <title></title>
    </head>
-   <body>
+   <body onload="controler.init();">
       <canvas id="canvas" width="900" height="900">
          Ton navigateur c'est de la merde
       </canvas>
@@ -15,5 +15,12 @@
          <input type="number" id="hauteur" name="hauteur" min="10" max="60" value="20">
       </from>
       <script src="scripts/canvas.js"></script>
+      <script
+        src="https://code.jquery.com/jquery-3.4.1.js"
+        integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+        crossorigin="anonymous"></script>
+        <script src="scripts/view.js"></script>
+        <script src="scripts/model.js"></script>
+        <script src="scripts/controler.js"></script>
    </body>
 </html>

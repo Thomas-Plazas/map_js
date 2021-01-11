@@ -2,16 +2,17 @@ class Controller {
    constructor(model, view) {
       this.model = model;
       this.view = view;
+      var ctrl = this;
       this.view.get_map_L().addEventListener('change', function (){
          var h = parseInt(view.get_map_H().value),
              l = parseInt(view.get_map_L().value);
-         draw(h, l); // faut trouvé comment appeler le this de la classe
+         ctrl.draw(h, l);
       });
 
       this.view.get_map_H().addEventListener('change', function (){
          var h = parseInt(view.get_map_H().value),
              l = parseInt(view.get_map_L().value);
-         draw(h, l); // faut trouvé comment appeler le this de la classe
+         ctrl.draw(h, l);
       });
       this.init();
    }

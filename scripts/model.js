@@ -10,6 +10,14 @@ class Model {
       this.HEXTILES_IMAGE.src = 'img/fantasyhextiles_v3_borderless.png';
    }
 
+   get_map_H(){
+      return this.map_H;
+   }
+
+   get_map_L(){
+      return this.map_L;
+   }
+   
    get_img_X(id){
       return id%8;
    }

@@ -1,21 +1,24 @@
-var view = {};
+class View {
+   constructor() {
+      this.canvas = document.getElementById('canvas');
+      this.ctx = this.canvas.getContext('2d');
+   }
 
-view.get_canvas = function (){
-  return document.getElementById('canvas');
-}
+   get_canvas(){
+      return this.canvas;
+   }
 
-view.get_ctx = function (){
-  return get_canvas().getContext('2d');
-}
-
-view.get_map_H = function (){
-  return document.getElementById("hauteur");
-}
-
-view.get_map_L = function (){
-  return document.getElementById("largeur");
-}
-
-view.draw_tuile = function(x,y,id){
-     view.get_ctx().drawImage(HEXTILES_IMAGE,model.get_img_X(id)*32,model.get_img_Y(id)*48,32,48,x,y*14,32,48);
+   get_ctx(){
+      return this.ctx;
+   }
+   get_map_H(){
+      return document.getElementById("hauteur");
+   }
+   get_map_L(){
+      return document.getElementById("largeur");
+   }
+   draw_tuile(x, y, hextiles, img_x, img_y){
+      //this.ctx.drawImage(model.get_hextiles_images(), model.get_img_X(id)*32, model.get_img_Y(id)*48, 32, 48, x, y*14, 32, 48);
+      this.ctx.drawImage(hextiles, img_x*32, img_y*48, 32, 48, x, y*14, 32, 48);
+   }
 }

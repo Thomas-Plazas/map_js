@@ -1,9 +1,9 @@
 var canvas = document.getElementById('canvas'),
-   ctx = canvas.getContext('2d'),
-   hauteur = 20,
-   largeur=10,
-   inputH = document.getElementById("hauteur"),
-   inputL = document.getElementById("largeur");
+ctx = canvas.getContext('2d'),
+hauteur = 20,
+largeur=10,
+inputH = document.getElementById("hauteur"),
+inputL = document.getElementById("largeur");
 
 const HEXTILES_IMAGE = new Image();
 HEXTILES_IMAGE.src = 'img/fantasyhextiles_v3_borderless.png';
@@ -19,11 +19,11 @@ inputL.addEventListener('change', function (){
 });
 
 Promise.all([
-    new Promise( (resolve) => {HEXTILES_IMAGE.addEventListener('load', () => { resolve();}); })
+   new Promise( (resolve) => {HEXTILES_IMAGE.addEventListener('load', () => { resolve();}); })
 ])
 .then(() => {
-      draw(hauteur, largeur);
-   }
+   draw(hauteur, largeur);
+}
 );
 
 function draw(hauteur,largeur){

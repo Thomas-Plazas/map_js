@@ -1,27 +1,25 @@
-var model = {};
-model.map_H = "";
-model.map_L = "";
-model.HEXTILES_IMAGE = new Image();
+class Model {
+   constructor() {
+      this.map_H = 10;
+      this.map_L = 10;
+      this.HEXTILES_IMAGE = new Image();
+      this.set_hextiles_images();
+   }
 
-model.set_hextiles_images = function(){
-  model.HEXTILES_IMAGE.src = 'img/fantasyhextiles_v3_borderless.png';
-}
+   set_hextiles_images(){
+      this.HEXTILES_IMAGE.src = 'img/fantasyhextiles_v3_borderless.png';
+   }
 
-model.get_map_H = function(){
-  return view.get_map_H().value;
-}
+   get_img_X(id){
+      return id%8;
+   }
 
-model.get_map_L = function(){
-  return view.get_map_L().value;
-}
+   get_img_Y(id){
+      return parseInt(id/8);
+   }
 
-model.get_img_X = function (id){
-   return id%8;
-}
-model.get_img_Y = function (id){
-   return parseInt(id/8);
-}
+   get_hextiles_images(){
+      return this.HEXTILES_IMAGE;
+   }
 
-model.get_hextiles_images = function(){
-  return model.HEXTILES_IMAGES;
 }

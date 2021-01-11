@@ -21,3 +21,7 @@ model.get_img_X = function (id){
 model.get_img_Y = function (id){
    return parseInt(id/8);
 }
+
+model.get_hextiles_images = function(){
+  return model.HEXTILES_IMAGES;
+}

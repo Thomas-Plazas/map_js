@@ -67,7 +67,7 @@ class Tuile {
             if (this.humidity < 1) {
                 this.imageId = 0;
             }
-            //VEGETATION +  
+            //VEGETATION +
             else if (this.humidity >= 1 && this.humidity < 2) {
                 this.imageId = 1;
             }

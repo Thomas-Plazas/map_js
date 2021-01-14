@@ -69,9 +69,9 @@ class Grid {
                 t.setElevation((noise.simplex2(nx,ny)+1)*2);
                 t.setHumidity((noise.simplex2(nx,ny)+1)*2)
                 this.add_tuile(t);
-                value[y][x] = noise.simplex2(nx, ny);
-                var id = Math.floor(Math.random() * 41);
-                this.bind_draw_tuile(deplacement, y, this.get_hextiles_images(), this.get_img_X(id), this.get_img_Y(id));
+                //var id = Math.floor(Math.random() * 41);
+                console.log((noise.simplex2(nx,ny)+1)*2);
+                this.bind_draw_tuile(deplacement, y, this.get_hextiles_images(), this.get_img_X(t.getImageId()), this.get_img_Y(t.getImageId()));
             }
         }
     }

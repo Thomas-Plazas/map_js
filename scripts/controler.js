@@ -21,7 +21,7 @@ class Controller {
 
         this.view.set_map_H(this.model.get_map_H());
         this.view.set_map_L(this.model.get_map_L());
-
+        noise.seed(Math.random());
         Promise.all([
             new Promise((resolve) => {
                 this.model.get_hextiles_images().addEventListener('load', () => {
@@ -42,22 +42,11 @@ class Controller {
             for (var x = 0; x < largeur; x++) {
                 var z = y % 2 === 0 ? x * 48 + 24 : x * 48;
                 var nx = x / largeur - 0.5, ny = y / hauteur - 0.5;
-                value[y][x] = this.noise(nx, ny);
-
-                // var x=i*48;
-                // if(j%2==0){
-                //    x=i*48+24;
-                // }
-                var id = Math.floor(Math.random() * (41 - 0)) + 0;
+                value[y][x] = noise.simplex2(nx, ny);
+                var id = Math.floor(Math.random() * 41);
                 this.view.draw_tuile(z, y, this.model.get_hextiles_images(), this.model.get_img_X(id), this.model.get_img_Y(id));
             }
         }
-    }
-
-    noise(nx, ny){
-        // let gen = new SimplexNoise();
-        //return gen.noise2D(nx, ny) / 2 + 0.5;
-        return 1;
     }
 }
 

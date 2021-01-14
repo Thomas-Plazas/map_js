@@ -1,6 +1,6 @@
 class Grid {
     constructor() {
-        this.map_H = 34;
+        this.map_H = 54;
         this.map_L = 18;
         this.tuiles = [];
         this.HEXTILES_IMAGE = new Image();
@@ -66,11 +66,10 @@ class Grid {
                 var deplacement = y % 2 === 0 ? x * 48 + 24 : x * 48;
                 var nx = x / largeur - 0.5, ny = y / hauteur - 0.5;
                 var t = new Tuile(x, y);
-                t.setElevation((noise.simplex2(nx,ny)+1)*2);
-                t.setHumidity((noise.simplex2(nx,ny)+1)*2)
+                t.setElevation((noise.perlin2(nx,ny)+1)*2);
+                t.setHumidity((noise2.perlin2(nx,ny)+1)*2)
                 this.add_tuile(t);
-                //var id = Math.floor(Math.random() * 41);
-                console.log((noise.simplex2(nx,ny)+1)*2);
+                console.log((noise2.perlin2(nx,ny)+1)*2);
                 this.bind_draw_tuile(deplacement, y, this.get_hextiles_images(), this.get_img_X(t.getImageId()), this.get_img_Y(t.getImageId()));
             }
         }

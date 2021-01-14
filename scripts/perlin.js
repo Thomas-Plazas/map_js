@@ -15,7 +15,8 @@
  */
 
 (function (global) {
-    var module = global.noise = {};
+   var module = global.noise = {};
+   var module2 = global.noise2 = {};
 
     function Grad(x, y, z) {
         this.x = x;
@@ -354,5 +355,10 @@
                 lerp(n011, n111, u), w),
             v);
     };
+    module2.seed = module.seed;
+    module2.simplex2 = module.simplex2;
+    module2.simplex3 = module.simplex3;
+    module2.perlin2 = module.perlin2;
+    module2.perlin3 = module.perlin3;
 
-})(this);
+    })(this);

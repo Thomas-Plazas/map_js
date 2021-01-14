@@ -58,11 +58,11 @@ class Tuile {
 
     generateImageId() {
         //OCEAN
-        if (this.elevation < 1) {
+        if (this.elevation < 1.5) {
             this.imageId = 7;
         }
         //PLAINE
-        else if (this.elevation >= 1 && this.elevation < 1.5) {
+        else if (this.elevation >= 1.5 && this.elevation < 2.75) {
             //SANS VEGETATION
             if (this.humidity < 1) {
                 this.imageId = 0;
@@ -81,7 +81,7 @@ class Tuile {
             }
         }
         //PLAINE ALTITUDE (proche de la neige)
-        else if (this.elevation >= 1.5 && this.elevation < 2) {
+        else if (this.elevation >= 2.75 && this.elevation < 3) {
             //CAILLOUX
             if (this.humidity < 1) {
                 this.imageId = 3;
@@ -100,7 +100,7 @@ class Tuile {
             }
         }
         //NEIGE
-        else if (this.elevation >= 2 && this.elevation < 3) {
+        else if (this.elevation >= 3 && this.elevation < 3.5) {
             //SANS VEGETATION
             if (this.humidity < 1) {
                 this.imageId = 16;
@@ -119,7 +119,7 @@ class Tuile {
             }
         }
         //MONTAGNE
-        else if (this.elevation >= 1 && this.elevation < 2) {
+        else if (this.elevation >= 3.5 && this.elevation < 4) {
             //SANS VEGETATION
             if (this.humidity < 1) {
                 this.imageId = 5;

@@ -1,7 +1,7 @@
 class Grid {
     constructor() {
-        this.map_H = 10;
-        this.map_L = 10;
+        this.map_H = 34;
+        this.map_L = 18;
         this.tuiles = [];
         this.HEXTILES_IMAGE = new Image();
         this.set_hextiles_images();
@@ -33,6 +33,14 @@ class Grid {
 
     get_tuiles() {
         return this.tuiles;
+    }
+
+    set_map_H(h){
+        this.map_H = h;
+    }
+
+    set_map_L(l){
+        this.map_L = l;
     }
 
     add_tuile(t) {

@@ -29,8 +29,8 @@ class Controller {
         this.grid.bind_draw(this.draw_tuile);
         this.grid.bind_refresh(this.refresh_canvas);
 
-        noise.seed(Math.random());
-        noise2.seed(Math.random());
+        //noise.seed(Math.random());
+        //noise2.seed(Math.random());
 
 
         Promise.all([

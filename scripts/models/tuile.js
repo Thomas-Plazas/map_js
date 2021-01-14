@@ -56,89 +56,98 @@ class Tuile {
         );
     }
 
-    generateImageId() {
-        //OCEAN
-        if (this.elevation < 1.5) {
-            this.imageId = 7;
-        }
-        //PLAINE
-        else if (this.elevation >= 1.5 && this.elevation < 2.75) {
-            //SANS VEGETATION
-            if (this.humidity < 1) {
-                this.imageId = 0;
-            }
-            //VEGETATION +
-            else if (this.humidity >= 1 && this.humidity < 2) {
-                this.imageId = 1;
-            }
-            //VEGETATION ++
-            else if (this.humidity >= 2 && this.humidity < 3) {
-                this.imageId = 2;
-            }
-            //LAC
-            else if (this.humidity >= 3 && this.humidity < 4) {
-                this.imageId = 6;
-            }
-        }
-        //PLAINE ALTITUDE (proche de la neige)
-        else if (this.elevation >= 2.75 && this.elevation < 3) {
-            //CAILLOUX
-            if (this.humidity < 1) {
-                this.imageId = 3;
-            }
-            //CAILLOUX + VEGETATION
-            else if (this.humidity >= 1 && this.humidity < 2) {
-                this.imageId = 4;
-            }
-            //CAILLOUX NEIGE
-            else if (this.humidity >= 2 && this.humidity < 3) {
-                this.imageId = 19;
-            }
-            //CAILLOUX NEIGE + VEGETATION
-            else if (this.humidity >= 3 && this.humidity < 4) {
-                this.imageId = 20;
-            }
-        }
-        //NEIGE
-        else if (this.elevation >= 3 && this.elevation < 3.5) {
-            //SANS VEGETATION
-            if (this.humidity < 1) {
-                this.imageId = 16;
-            }
-            //VEGETATION +
-            else if (this.humidity >= 1 && this.humidity < 2) {
-                this.imageId = 17;
-            }
-            //VEGETATION ++
-            else if (this.humidity >= 2 && this.humidity < 3) {
-                this.imageId = 18;
-            }
-            //LAC GELE
-            else if (this.humidity >= 3 && this.humidity < 4) {
-                this.imageId = 21;
-            }
-        }
-        //MONTAGNE
-        else if (this.elevation >= 3.5 && this.elevation < 4) {
-            //SANS VEGETATION
-            if (this.humidity < 1) {
-                this.imageId = 5;
-            }
-            //VEGETATION +
-            else if (this.humidity >= 1 && this.humidity < 2) {
-                this.imageId = 17;
-            }
-            //VEGETATION ++
-            else if (this.humidity >= 2 && this.humidity < 3) {
-                this.imageId = 18;
-            }
-            //LAC
-            else if (this.humidity >= 3 && this.humidity < 4) {
-                this.imageId = 21;
-            }
-        }
+    fill_holes(){
+        let terre = 0, eau = 0,
+            voisins = this.getVoisins(),
+            tot_elev = 0,
+            tot_hum = 0;
 
+        for(let i=0; i < voisins.length; i++){
+            if(voisins[i].getImageId() === 7){
+                eau++;
+            }
+            else{
+                terre++;
+            }
+            tot_elev += voisins[i].getElevation();
+            tot_hum += voisins[i].getHumidity();
+            /*test
+            if(voisins[i] !== undefined){
+                voisins[i].setImageId(24);
+            }*/
+        }
+        if(this.getImageId() === 7) {
+            if(terre > eau && voisins.length === 6){
+                this.setElevation(tot_elev/voisins.length);
+                this.setHumidity(tot_hum/voisins.length);
+            }
+        }
+        else{
+            if(terre === 0){
+                this.setImageId(7);
+            }
+        }
+        this.littoral();
     }
 
+    littoral(){
+        let terre = 0,
+            voisins = this.getVoisins();
+        for(var i=0; i < voisins.length; i++){
+            if(voisins[i].getImageId() !== 7 && voisins[i].getImageId() !== 6){
+                terre++;
+            }
+        }
+        if(this.getImageId() === 7) {
+            if(terre > 0){
+                this.setImageId(6);
+            }
+        }
+    }
 
+    generateImageId() {
+        var e = this.elevation,
+            m = this.humidity;
+
+        if (e < 0.3){
+            this.setImageId(7); // MER
+        }
+        else if (e > 0.8){
+            this.setImageId(5); // HAUTE MONTAGNE
+        }
+        else if (e > 0.6){ // MOYENNE MONTAGNE
+            if (m < 0.33){
+                this.setImageId(4); // VERDURE
+            }
+            else if (m < 0.66){
+                this.setImageId(19); // NEIGE
+            }
+        }
+        else if (e > 0.3){ // PLAINE / FORÊTS
+            if (m < 0.16){
+                this.setImageId(0);
+            }
+            else if (m < 0.50){
+                this.setImageId(0);
+            }
+            else if (m < 0.83){
+                this.setImageId(2);
+            }
+            else{
+                this.setImageId(18);
+            }
+        }
+
+        else if (e < 0.3){  // PLAINE / FORÊTS
+            if (m < 0.16){
+                this.setImageId(0);
+            }
+            if (m < 0.33){
+                this.setImageId(1);
+            }
+            if (m < 0.66){
+                this.setImageId(2);
+            }
+        }
+    }
 }

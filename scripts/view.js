@@ -29,7 +29,7 @@ class View {
     }
 
     draw_tuile(x, y, hextiles, img_x, img_y) {
-        this.ctx.drawImage(hextiles, img_x * 32, img_y * 48, 32, 48, x, y * 14, 32, 48);
+        this.ctx.drawImage(hextiles, img_x * 32, img_y * 48, 32, 48, x/2, y * 7, 16, 24);
     }
 
     refresh(){

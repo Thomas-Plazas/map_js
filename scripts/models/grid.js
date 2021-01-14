@@ -66,6 +66,8 @@ class Grid {
                 var deplacement = y % 2 === 0 ? x * 48 + 24 : x * 48;
                 var nx = x / largeur - 0.5, ny = y / hauteur - 0.5;
                 var t = new Tuile(x, y);
+                t.setElevation((noise.simplex2(nx,ny)+1)*2);
+                t.setHumidity((noise.simplex2(nx,ny)+1)*2)
                 this.add_tuile(t);
                 value[y][x] = noise.simplex2(nx, ny);
                 var id = Math.floor(Math.random() * 41);

@@ -1,9 +1,10 @@
 class Grid {
     constructor() {
-        this.map_H = 108;
-        this.map_L = 36;
+        this.map_H = 62;
+        this.map_L = 18;
         this.tuiles = [];
         this.tuile_tab = [];
+        this.town = [];
         this.HEXTILES_IMAGE = new Image();
         this.set_hextiles_images();
     }
@@ -55,6 +56,9 @@ class Grid {
     bind_refresh(callback){
         this.refresh = callback;
     }
+    bind_draw_text(callback){
+        this.bind_draw_t = callback;
+    }
 
     generate(){
         this.refresh();
@@ -92,9 +96,13 @@ class Grid {
                 tuile.littoral();
             }
         }
+        this.add_town(0.005);
         this.draw();
         this.add_asset(0.1, 33, 0);
         this.add_asset(0.02, 38, 6);
+        this.drawNameTown();
+
+
     }
 
     find_voisins(){
@@ -200,6 +208,40 @@ class Grid {
                 }
             }
         }
+    }
+    add_town(frequence){
+        let hauteur = this.get_map_H(),
+            largeur = this.get_map_L();
+        for (let y = 0; y < hauteur; y++) {
+            for (let x = 0; x < largeur; x++) {
+                let deplacement = y % 2 === 0 ? x * 48 + 24 : x * 48,
+                    tuile = this.tuile_tab[y][x];
+
+                if(frequence > Math.random() && tuile.getImageId() !== 7){
+                   if(tuile.getImageId() === 6){//LITORAL
+                      //TODO Cas symétrique
+                      tuile.setImageId(36);
+                   }
+                   else if (tuile.getElevation() < 0.75){//PLAINE
+                      //TODO Cas des autre ville plaine
+                      tuile.setImageId(8);
+                   }
+                   else if (tuile.getElevation() < 0.84){//NEIGE
+                       //TODO Cas des autre ville neige
+                      tuile.setImageId(22);
+                   }
+                    this.town.push(tuile);
+                }
+            }
+        }
+    }
+    drawNameTown(){
+        for (let i = 0; i < this.town.length; i++) {
+                let deplacement = this.town[i].getY() % 2 === 0 ? this.town[i].getX() * 48 + 24 : this.town[i].getX() * 48,
+                tuile = this.town[i];
+                this.bind_draw_t(deplacement,tuile.getY(),"Grenoble");
+         }
+
     }
 
     draw(){

@@ -16,6 +16,14 @@ class Tuile {
         return this.y;
     }
 
+    setX(x) {
+        this.x = x;
+    }
+
+    setY(y) {
+        this.y = y;
+    }
+
     getHumidity() {
         return this.humidity;
     }
@@ -47,6 +55,10 @@ class Tuile {
 
     getVoisins() {
         return this.voisins;
+    }
+
+    isNotSeaOrLittoral(){
+        return this.getImageId() !== 6 && this.getImageId() !== 7;
     }
 
     //TODO

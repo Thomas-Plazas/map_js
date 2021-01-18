@@ -69,11 +69,14 @@ class Grid {
                 this.tuile_tab[y][x] = t;
                 var gen = new SimplexNoise(),
                     gen2 = new SimplexNoise(),
+                    gen3 = new SimplexNoise(),
                     e = gen.noise2D(nx, ny) / 2 + 0.5,
                     h = gen2.noise2D(nx, ny) / 2 + 0.5,
+                    temp = gen3.noise2D(nx, ny) / 2 + 0.5,
                     d = Math.sqrt(nx * nx + ny * ny) / Math.sqrt(0.2);
 
                 e = (2 + e - d * 2) / 2.85;
+                t.setTemperature(temp);
                 t.setElevation(e);
                 t.setHumidity(h);
             }
@@ -85,7 +88,12 @@ class Grid {
                 //tuile.fill_holes();
             }
         }
-        this.smooth_neighbors();
+        this.smooth_neighbors(1);
+        this.smooth_neighbors(2);
+        this.smooth_neighbors(3);
+        this.smooth_neighbors(3);
+        this.smooth_neighbors(3);
+        this.smooth_neighbors(3);
         for (let y = 0; y < hauteur; y++) {
             for (let x = 0; x < largeur; x++) {
                 let tuile = this.tuile_tab[y][x];
@@ -93,9 +101,9 @@ class Grid {
             }
         }
         this.add_town(0.005);
-        this.add_river(0.05);
+        //this.add_river(0.05);
         this.draw();
-        this.add_asset(0.1, 33, 0); // fleurs
+        //this.add_asset(0.05, 33, 0); // fleurs
         this.drawNameTown();
 
 
@@ -185,7 +193,7 @@ class Grid {
         this.tuile_tab[y_cor][x_cor].setImageId(16);*/
     }
 
-    smooth_neighbors() {
+    smooth_neighbors(smooth_type) {
         var tabs = [];
         let hauteur = this.get_map_H(),
             largeur = this.get_map_L();
@@ -195,17 +203,21 @@ class Grid {
                 let tuile = this.tuile_tab[y][x],
                     voisins = tuile.getVoisins(),
                     e_moy = 0,
-                    h_moy = 0;
+                    h_moy = 0,
+                    t_moy = 0;
                 for (let i = 0; i < voisins.length; i++) {
                     e_moy += voisins[i].getElevation();
                     h_moy += voisins[i].getHumidity();
+                    t_moy += voisins[i].getTemperature();
                 }
                 e_moy /= voisins.length;
                 h_moy /= voisins.length;
+                t_moy /= voisins.length;
                 tabs[y][x] = {
                     tuile: tuile,
                     elev: e_moy,
-                    humidity: h_moy
+                    humidity: h_moy,
+                    temp: t_moy
                 }
             }
         }
@@ -213,6 +225,18 @@ class Grid {
             for (let x = 0; x < largeur; x++) {
                 tabs[y][x].tuile.setElevation(tabs[y][x].elev);
                 tabs[y][x].tuile.setHumidity(tabs[y][x].humidity);
+                switch (smooth_type){
+                    case 1:
+                        tabs[y][x].tuile.setElevation(tabs[y][x].elev);
+                        break;
+                    case 2:
+                        tabs[y][x].tuile.setHumidity(tabs[y][x].humidity);
+                        break;
+                    default:
+                        console.log("here", tabs[y][x].temp);
+                        tabs[y][x].tuile.setTemperature(tabs[y][x].temp);
+                        break;
+                }
             }
         }
     }

@@ -46,14 +46,14 @@ class Tuile {
         this.generateImageId();
     }
 
-    setElevation(e) {
+    setElevation(e, dont_generate) {
         this.elevation = e;
-        this.generateImageId();
+        if (!dont_generate) this.generateImageId();
     }
 
-    setTemperature(t) {
+    setTemperature(t, dont_generate) {
         this.temperature = t;
-        this.generateImageId();
+        if (!dont_generate) this.generateImageId();
     }
 
     setImageId(id) {
@@ -117,7 +117,7 @@ class Tuile {
         let terre = 0,
             voisins = this.getVoisins();
         for(var i=0; i < voisins.length; i++){
-            if(voisins[i].getImageId() !== 7 && voisins[i].getImageId() !== 6){
+            if(voisins[i].isNotSeaOrLittoral()){
                 terre++;
             }
         }

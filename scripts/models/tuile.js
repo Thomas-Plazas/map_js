@@ -48,10 +48,12 @@ class Tuile {
 
     setElevation(e) {
         this.elevation = e;
+        this.generateImageId();
     }
 
     setTemperature(t) {
         this.temperature = t;
+        this.generateImageId();
     }
 
     setImageId(id) {

@@ -32,10 +32,6 @@ class Grid {
         return this.HEXTILES_IMAGE;
     }
 
-    get_tuiles() {
-        return this.tuiles;
-    }
-
     set_map_H(h) {
         this.map_H = h;
     }
@@ -90,10 +86,7 @@ class Grid {
         }
         this.smooth_neighbors(1);
         this.smooth_neighbors(2);
-        this.smooth_neighbors(3);
-        this.smooth_neighbors(3);
-        this.smooth_neighbors(3);
-        this.smooth_neighbors(3);
+        for(let i=0; i < 4; i++) this.smooth_neighbors(3);
         for (let y = 0; y < hauteur; y++) {
             for (let x = 0; x < largeur; x++) {
                 let tuile = this.tuile_tab[y][x];
@@ -101,9 +94,9 @@ class Grid {
             }
         }
         this.add_town(0.005);
-        //this.add_river(0.05);
+        this.add_river(0.05);
         this.draw();
-        //this.add_asset(0.05, 33, 0); // fleurs
+        this.add_asset(0.05, 33, 0); // fleurs
         this.drawNameTown();
 
 
@@ -223,8 +216,6 @@ class Grid {
         }
         for (let y = 0; y < hauteur; y++) {
             for (let x = 0; x < largeur; x++) {
-                tabs[y][x].tuile.setElevation(tabs[y][x].elev);
-                tabs[y][x].tuile.setHumidity(tabs[y][x].humidity);
                 switch (smooth_type){
                     case 1:
                         tabs[y][x].tuile.setElevation(tabs[y][x].elev);
@@ -233,7 +224,6 @@ class Grid {
                         tabs[y][x].tuile.setHumidity(tabs[y][x].humidity);
                         break;
                     default:
-                        console.log("here", tabs[y][x].temp);
                         tabs[y][x].tuile.setTemperature(tabs[y][x].temp);
                         break;
                 }
@@ -294,7 +284,7 @@ class Grid {
                 let tuile = this.tuile_tab[y][x];
                 if(frequence > Math.random() && tuile.getElevation() > 0.7){
                     let river = [tuile];
-                    tuile.setImageId(27);
+                    tuile.setImageId(40);
                     let river_tuiles = this.next_river(river);
                     this.draw_river(river_tuiles);
                 }
@@ -306,18 +296,17 @@ class Grid {
     next_river(tuiles){
         let current = tuiles[tuiles.length-1];
         if(!current.isNotSeaOrLittoral()) return tuiles; // break condition
-        if(tuiles.length !== 1) current.setImageId(24);
+        if(tuiles.length !== 1) current.setImageId(42);
         let voisins = current.getVoisins(),
             min = 1,
             lower = current;
         for (let i = 0; i < voisins.length; i++) {
             let elev = voisins[i].getElevation();
-            if(elev <= min){
+            if(tuiles.indexOf(voisins[i]) === -1 && elev <= min){
                 min = elev;
                 lower = voisins[i];
             }
         }
-        if(tuiles.indexOf(lower) !== -1) return tuiles;
         tuiles.push(lower)
         return this.next_river(tuiles);
     }

@@ -5,6 +5,7 @@ class Tuile {
         this.voisins = [];
         this.humidity = 0;
         this.elevation = 0;
+        this.temperature = 0;
         this.imageId = 0;
     }
 
@@ -16,12 +17,24 @@ class Tuile {
         return this.y;
     }
 
+    setX(x) {
+        this.x = x;
+    }
+
+    setY(y) {
+        this.y = y;
+    }
+
     getHumidity() {
         return this.humidity;
     }
 
     getElevation() {
         return this.elevation;
+    }
+
+    getTemperature() {
+        return this.temperature;
     }
 
     getImageId() {
@@ -33,8 +46,14 @@ class Tuile {
         this.generateImageId();
     }
 
-    setElevation(e) {
+    setElevation(e, dont_generate) {
         this.elevation = e;
+        if (!dont_generate) this.generateImageId();
+    }
+
+    setTemperature(t, dont_generate) {
+        this.temperature = t;
+        if (!dont_generate) this.generateImageId();
     }
 
     setImageId(id) {
@@ -47,6 +66,10 @@ class Tuile {
 
     getVoisins() {
         return this.voisins;
+    }
+
+    isNotSeaOrLittoral(){
+        return this.getImageId() !== 6 && this.getImageId() !== 7;
     }
 
     //TODO
@@ -94,7 +117,7 @@ class Tuile {
         let terre = 0,
             voisins = this.getVoisins();
         for(var i=0; i < voisins.length; i++){
-            if(voisins[i].getImageId() !== 7 && voisins[i].getImageId() !== 6){
+            if(voisins[i].isNotSeaOrLittoral()){
                 terre++;
             }
         }
@@ -106,48 +129,85 @@ class Tuile {
     }
 
     generateImageId() {
-        var e = this.elevation,
-            m = this.humidity;
 
-        if (e < 0.3){
-            this.setImageId(7); // MER
+        var e = this.getElevation(),
+            m = this.getHumidity(),
+            t = this.getTemperature();
+
+        // MER
+        if (e < 0.24) {
+            this.setImageId(7);
         }
-        else if (e > 0.8){
-            this.setImageId(5); // HAUTE MONTAGNE
+        // Plaine
+        else if (e < 0.68) {
+            if (t < 0.44) {//DESERT
+               if(m < 0.44){
+                  this.setImageId(24);
+               }
+               else if (m < 0.53) {
+                  this.setImageId(26);
+               }
+               else if (m < 0.62) {
+                  this.setImageId(25);
+               }
+               else if (m < 0.695) {
+                  this.setImageId(27);
+               }
+               else{
+                  this.setImageId(28);
+               }
+            } else if (t < 0.49) {//SAVANE
+
+                if(m < 0.45){
+                  this.setImageId(14);
+               }
+               else if (m < 0.53) {
+                  this.setImageId(13);
+               }
+               else {
+                  this.setImageId(12);
+               }
+            } else if (t < 0.7) {//NORMALE
+               if(m < 0.44){
+                  this.setImageId(0);
+               }
+               else if (m < 0.53) {
+                  this.setImageId(1);
+               }
+               else if (m < 0.62) {
+                  this.setImageId(2);
+               }
+               else if (m < 0.695) {
+                  this.setImageId(4);
+               }
+               else{
+                  this.setImageId(32);
+               }
+            }
+
         }
-        else if (e > 0.6){ // MOYENNE MONTAGNE
-            if (m < 0.33){
-                this.setImageId(4); // VERDURE
+        // Neige
+        else if (e < 0.805) {
+            if(m < 0.49){
+               this.setImageId(16);
             }
-            else if (m < 0.66){
-                this.setImageId(19); // NEIGE
+            else if (m < 0.56) {
+               this.setImageId(17);
             }
-        }
-        else if (e > 0.3){ // PLAINE / FORÊTS
-            if (m < 0.16){
-                this.setImageId(0);
+            else if (m < 0.62) {
+               this.setImageId(18);
             }
-            else if (m < 0.50){
-                this.setImageId(0);
-            }
-            else if (m < 0.83){
-                this.setImageId(2);
+            else if (m < 0.695) {
+               this.setImageId(19);
             }
             else{
-                this.setImageId(18);
+               this.setImageId(20);
             }
         }
+        // Montagne
+        else {
+            this.setImageId(5);
+        }
+   }
 
-        else if (e < 0.3){  // PLAINE / FORÊTS
-            if (m < 0.16){
-                this.setImageId(0);
-            }
-            if (m < 0.33){
-                this.setImageId(1);
-            }
-            if (m < 0.66){
-                this.setImageId(2);
-            }
-        }
-    }
 }

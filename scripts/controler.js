@@ -28,6 +28,7 @@ class Controller {
         this.view.set_map_L(this.grid.get_map_L());
         this.grid.bind_draw(this.draw_tuile);
         this.grid.bind_refresh(this.refresh_canvas);
+        this.grid.bind_draw_text(this.draw_text);
 
         //noise.seed(Math.random());
         //noise2.seed(Math.random());
@@ -51,6 +52,9 @@ class Controller {
 
     refresh_canvas = () => {
         this.view.refresh();
+    }
+    draw_text = (x,y,text) => {
+        this.view.draw_text(x,y,text);
     }
 }
 

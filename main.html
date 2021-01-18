@@ -1,27 +1,31 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-   <meta charset="utf-8">
-   <title></title>
+    <meta charset="utf-8">
+    <title></title>
 </head>
-<!-- <body onload="controler.init();"> -->
-<body style="display: flex;">
-   <canvas id="canvas" width="900" height="900"></canvas>
-   <form method="get">
-      <label for="largeur">Largeur :</label>
-      <input type="number" id="largeur" name="largeur" min="10" max="70" value="10" style="width:40px;">
-      <label for="hauteur">Hauteur:</label>
-      <input type="number" id="hauteur" name="hauteur" min="10" max="110" value="20" style="width:40px;">
-   </from>
-   <script
-   src="https://code.jquery.com/jquery-3.4.1.js"
-   integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
-   crossorigin="anonymous"></script>
-   <script src="scripts/view.js"></script>
-   <script src="scripts/models/grid.js"></script>
-   <script src="scripts/perlin.js"></script>
-   <script src="scripts/simplex.js"></script>
-   <script src="scripts/models/tuile.js"></script>
-   <script src="scripts/controler.js"></script>
-</body>
+    <!-- <body onload="controler.init();"> -->
+    <body style="display: flex; font-family:'BreatheFire';">
+        <canvas id="canvas" width="900" height="900"></canvas>
+        <form method="get">
+            <label for="largeur">Largeur :</label>
+            <input type="number" id="largeur" name="largeur" min="10" max="70" value="10" style="width:40px;">
+            <label for="hauteur">Hauteur:</label>
+            <input type="number" id="hauteur" name="hauteur" min="10" max="110" value="20" style="width:40px;">
+        </form>
+        <!-- <script src="scripts/canvas.js"></script> -->
+        <script src="3rd_party/jquery/jquery.min.js"></script>
+        <script src="scripts/view.js"></script>
+        <script src="scripts/models/grid.js"></script>
+        <script src="scripts/perlin.js"></script>
+        <script src="scripts/simplex.js"></script>
+        <script src="scripts/models/tuile.js"></script>
+        <script src="scripts/controler.js"></script>
+    </body>
 </html>
+<style media="screen">
+    @font-face {
+        font-family: BreatheFire;
+        src: url('3rd_party/fonts/BreatheFire/BreatheFire.otf');
+    }
+</style>

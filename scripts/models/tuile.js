@@ -139,28 +139,69 @@ class Tuile {
             this.setImageId(7);
         }
         // Plaine
-        else if (e < 0.71) {
+        else if (e < 0.68) {
             if (t < 0.44) {//DESERT
-                this.setImageId(24);
+               if(m < 0.44){
+                  this.setImageId(24);
+               }
+               else if (m < 0.53) {
+                  this.setImageId(26);
+               }
+               else if (m < 0.62) {
+                  this.setImageId(25);
+               }
+               else if (m < 0.695) {
+                  this.setImageId(27);
+               }
+               else{
+                  this.setImageId(28);
+               }
             } else if (t < 0.49) {//SAVANE
-                this.setImageId(14);
+
+                if(m < 0.45){
+                  this.setImageId(14);
+               }
+               else if (m < 0.53) {
+                  this.setImageId(13);
+               }
+               else {
+                  this.setImageId(12);
+               }
             } else if (t < 0.7) {//NORMALE
-                this.setImageId(0);
+               if(m < 0.44){
+                  this.setImageId(0);
+               }
+               else if (m < 0.53) {
+                  this.setImageId(1);
+               }
+               else if (m < 0.62) {
+                  this.setImageId(2);
+               }
+               else if (m < 0.695) {
+                  this.setImageId(4);
+               }
+               else{
+                  this.setImageId(32);
+               }
             }
 
         }
         // Neige
-        else if (e < 0.82) {
-            if (t < 0.4) {
-                this.setImageId(16);
-            } else if (t < 0.6) {
-                this.setImageId(17);
-            } else if (t < 0.8) {
-                this.setImageId(18);
-            } else if (t < 0.86) {
-                this.setImageId(20);
-            } else {
-                this.setImageId(21);
+        else if (e < 0.805) {
+            if(m < 0.49){
+               this.setImageId(16);
+            }
+            else if (m < 0.56) {
+               this.setImageId(17);
+            }
+            else if (m < 0.62) {
+               this.setImageId(18);
+            }
+            else if (m < 0.695) {
+               this.setImageId(19);
+            }
+            else{
+               this.setImageId(20);
             }
         }
         // Montagne

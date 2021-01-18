@@ -6,6 +6,9 @@ class Grid {
         this.town = [];
         this.HEXTILES_IMAGE = new Image();
         this.set_hextiles_images();
+        this.town_names = ["Frignac","Coatmeur","Goasvoen","Revonnas","Aumare","Moliets","Naville","Choriot","Viterbe",
+            "Lespart","Marcilly","Chaussoy","Cabrier","Escots","Ladoux","Maroncourt","Auxais","Cramait","Chambly",
+            "Milaria","Ruffec","Meillon","Limé","Clussais","Mienval"]
     }
 
     set_hextiles_images() {
@@ -89,8 +92,8 @@ class Grid {
         for(let i=0; i < 4; i++) this.smooth_neighbors(3);
 
         this.super_for(this.littoral)
-        this.super_for(this.add_town, 0.005);
         this.super_for(this.add_river, 0.05);
+        this.super_for(this.add_town, 0.008);
         this.super_for(this.draw);
         this.super_for(this.add_asset, 0.05, 33, 0); // fleurs
         this.drawNameTown();
@@ -249,22 +252,29 @@ class Grid {
         if (0.05 > Math.random() && tuile.getImageId() === 6) {
             tuile.setImageId(38);
         }
-        if (frequence > Math.random() && tuile.getImageId() !== 7) {
+        let voisins = tuile.getVoisins();
+        for(let i=0; i < voisins.length; i++){
+            if(this.town.indexOf(voisins[i]) !== -1) return;
+        }
+        if (frequence > Math.random() && tuile.getImageId() !== 7 && tuile.getVoisins().length === 6) {
             if (tuile.getImageId() === 6) {//LITORAL
                 let voisins = tuile.getVoisins();
                 if (voisins[4].isNotSeaOrLittoral() || voisins[5].isNotSeaOrLittoral()) {
                     tuile.setImageId(36);
+                    this.town.push(tuile);
                 } else if (voisins[2].isNotSeaOrLittoral() || voisins[1].isNotSeaOrLittoral()) {
                     tuile.setImageId(37);
+                    this.town.push(tuile);
                 }
             } else if (tuile.getElevation() < 0.75) {//PLAINE
                 let town = parseInt(Math.random() * 3) + 8;
                 tuile.setImageId(town);
+                this.town.push(tuile);
             } else if (tuile.getElevation() < 0.84) {//NEIGE
                 let town = parseInt(Math.random() * 2) + 22;
                 tuile.setImageId(town);
+                this.town.push(tuile);
             }
-            this.town.push(tuile);
         }
     }
 
@@ -328,9 +338,10 @@ class Grid {
         for (let i = 0; i < this.town.length; i++) {
             let deplacement = this.town[i].getY() % 2 === 0 ? this.town[i].getX() * 48 + 24 : this.town[i].getX() * 48,
                 tuile = this.town[i];
-            this.bind_draw_t(deplacement, tuile.getY(), "Grenoble");
+            let numero_ville = Math.floor(Math.random() * (this.town_names.length));
+            this.bind_draw_t(deplacement, tuile.getY(),this.town_names[numero_ville]);
+            this.town_names.splice(numero_ville, 1);
         }
-
     }
 
     draw = (x, y) => {

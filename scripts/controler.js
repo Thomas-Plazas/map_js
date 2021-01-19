@@ -29,7 +29,7 @@ class Controller {
         this.grid.bind_draw(this.draw_tuile);
         this.grid.bind_refresh(this.refresh_canvas);
         this.grid.bind_draw_text(this.draw_text);
-
+        this.grid.bind_draw_river(this.draw_river);
         //noise.seed(Math.random());
         //noise2.seed(Math.random());
 
@@ -55,6 +55,9 @@ class Controller {
     }
     draw_text = (x,y,text) => {
         this.view.draw_text(x,y,text);
+    }
+    draw_river = (x, y, hextiles, img_x, img_y, angle) => {
+        this.view.draw_river(x, y, hextiles, img_x, img_y, angle);
     }
 }
 

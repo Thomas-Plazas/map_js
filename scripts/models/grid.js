@@ -4,15 +4,18 @@ class Grid {
         this.map_L = 18;
         this.tuile_tab = [];
         this.town = [];
+        this.river = [];
         this.HEXTILES_IMAGE = new Image();
-        this.set_hextiles_images();
-        this.town_names = ["Frignac","Coatmeur","Goasvoen","Revonnas","Aumare","Moliets","Naville","Choriot","Viterbe",
-            "Lespart","Marcilly","Chaussoy","Cabrier","Escots","Ladoux","Maroncourt","Auxais","Cramait","Chambly",
-            "Milaria","Ruffec","Meillon","Limé","Clussais","Mienval"]
+        this.HEXTILES_RIVER = new Image();
+        this.HEXTILES_RIVER.src = 'img/fantasyhextiles_randr_4_v2.png';
+        this.set_hextiles_images('img/fantasyhextiles_v3.png');
+        this.town_names = ["Frignac", "Coatmeur", "Goasvoen", "Revonnas", "Aumare", "Moliets", "Naville", "Choriot", "Viterbe",
+            "Lespart", "Marcilly", "Chaussoy", "Cabrier", "Escots", "Ladoux", "Maroncourt", "Auxais", "Cramait", "Chambly",
+            "Milaria", "Ruffec", "Meillon", "Limé", "Clussais", "Mienval"]
     }
 
-    set_hextiles_images() {
-        this.HEXTILES_IMAGE.src = 'img/fantasyhextiles_v3.png';
+    set_hextiles_images(src) {
+        this.HEXTILES_IMAGE.src = src;
     }
 
     get_map_H() {
@@ -55,6 +58,10 @@ class Grid {
         this.bind_draw_t = callback;
     }
 
+    bind_draw_river(callback) {
+        this.draw_river = callback;
+    }
+
     generate() {
         this.refresh();
         let hauteur = this.get_map_H(),
@@ -89,20 +96,21 @@ class Grid {
         }
         this.smooth_neighbors(1);
         this.smooth_neighbors(2);
-        for(let i=0; i < 4; i++) this.smooth_neighbors(3);
+        for (let i = 0; i < 4; i++) this.smooth_neighbors(3);
 
         this.super_for(this.littoral)
         this.super_for(this.add_river, 0.05);
         this.super_for(this.add_town, 0.008);
         this.super_for(this.draw);
-        this.super_for(this.add_asset, 0.05, 33, 0); // fleurs
+        //this.super_for(this.add_asset, 0.05, 33, 0); // fleurs
+        this.set_river();
         this.drawNameTown();
 
 
     }
 
     // factor double for loops to avoid duplicate code lines
-    super_for(callback, frequence, id_asset, id_tuile){
+    super_for(callback, frequence, id_asset, id_tuile) {
         let hauteur = this.get_map_H(),
             largeur = this.get_map_L();
         for (let y = 0; y < hauteur; y++) {
@@ -224,7 +232,7 @@ class Grid {
         }
         for (let y = 0; y < hauteur; y++) {
             for (let x = 0; x < largeur; x++) {
-                switch (smooth_type){
+                switch (smooth_type) {
                     case 1:
                         tabs[y][x].tuile.setElevation(tabs[y][x].elev);
                         break;
@@ -249,12 +257,13 @@ class Grid {
 
     add_town = (x, y, hauteur, largeur, frequence) => {
         let tuile = this.tuile_tab[y][x];
+        if(this.river.indexOf(tuile) !== -1) return; // si on est sur une tuile de river
         if (0.05 > Math.random() && tuile.getImageId() === 6) {
             tuile.setImageId(38);
         }
         let voisins = tuile.getVoisins();
-        for(let i=0; i < voisins.length; i++){
-            if(this.town.indexOf(voisins[i]) !== -1) return;
+        for (let i = 0; i < voisins.length; i++) {
+            if (this.town.indexOf(voisins[i]) !== -1) return;
         }
         if (frequence > Math.random() && tuile.getImageId() !== 7 && tuile.getVoisins().length === 6) {
             if (tuile.getImageId() === 6) {//LITORAL
@@ -280,24 +289,51 @@ class Grid {
 
     add_river = (x, y, hauteur, largeur, frequence) => {
         let tuile = this.tuile_tab[y][x];
-        if(frequence > Math.random() && tuile.getElevation() > 0.7){
+        if (frequence > Math.random() && tuile.getElevation() > 0.7 && tuile.getElevation() < 0.805) {
             let river = [tuile];
-            tuile.setImageId(40);
-            let river_tuiles = this.next_river(river);
-            this.draw_river(river_tuiles);
+            this.next_river(river);
         }
     }
 
-    next_river(tuiles){
-        let current = tuiles[tuiles.length-1];
-        if(!current.isNotSeaOrLittoral()) return tuiles; // break condition
-        if(tuiles.length !== 1) current.setImageId(42);
+    next_river(tuiles) {
+        let current = tuiles[tuiles.length - 1],
+            e = current.getElevation(),
+            t = current.getTemperature();
+
+        // MER
+        if (e < 0.24) {
+            //current.setImageId(7);
+        }
+        // Plaine
+        else if (e < 0.68) {
+            if (t < 0.44) {//DESERT
+                current.setImageId(24);
+            } else if (t < 0.49) {//SAVANE
+                current.setImageId(14);
+            } else if (t < 0.7) {//NORMALE
+                current.setImageId(0);
+            }
+        }
+        // Neige
+        else if (e < 0.805) {
+            current.setImageId(16);
+        }
+        // Montagne
+        else {
+            current.setImageId(5);
+        }
+
+        this.river.push(current);//Ajout de la tuile à la liste de rivière
+        if (!current.isNotSeaOrLittoral()) {
+            return tuiles; // break condition
+        }
+        //if (tuiles.length !== 1) current.setImageId(42);
         let voisins = current.getVoisins(),
             min = 1,
             lower = current;
         for (let i = 0; i < voisins.length; i++) {
             let elev = voisins[i].getElevation();
-            if(tuiles.indexOf(voisins[i]) === -1 && elev <= min){
+            if (tuiles.indexOf(voisins[i]) === -1 && elev <= min) {
                 min = elev;
                 lower = voisins[i];
             }
@@ -306,32 +342,152 @@ class Grid {
         return this.next_river(tuiles);
     }
 
-    draw_river(tuiles){
-        for(let i=0; i < tuiles.length; i++){
-            let tuile = tuiles[i],
-                voisins = tuile.getVoisins(),
-                x = tuile.getX(),
-                y = tuile.getY(),
-                deplacement = y % 2 === 0 ? x * 48 + 24 : x * 48,
-                next = voisins.indexOf(tuiles[i+1]);
+    set_river() {
+        for (let i = 0; i < this.river.length; i++) {
+            let current = this.river[i],
+                index_of_previous_voisins = i !== 0 ? current.getVoisins().indexOf(this.river[i - 1]) : false;
+            if (i === 0 || index_of_previous_voisins === -1) {//SI pas de précédent
+                this.setRiverImage(-1, current, current.getVoisins().indexOf(this.river[i + 1]));
+            }
+            else if (i === this.river.length || current.getVoisins().indexOf(this.river[i + 1]) === -1) { // Si pas de suivant
+                this.setRiverImage(current.getVoisins().indexOf(this.river[i - 1]), current, -1);
+            } else {// Cas global
+                this.setRiverImage(current.getVoisins().indexOf(this.river[i - 1]), current, current.getVoisins().indexOf(this.river[i + 1]));
+            }
+        }
+    }
+
+    //index tuile index
+    setRiverImage(previous, current, next) {
+        let deplacement = current.getY() % 2 === 0 ? current.getX() * 48 + 24 : current.getX() * 48,
+            id, angle = 0;
+        if(previous === -1){ // depart
             switch (next){
                 case 0:
+                    id = 17;
+                    angle = 300;
                     break;
                 case 1:
+                    id = 17;
                     break;
                 case 2:
+                    id = 18;
                     break;
                 case 3:
+                    id = 17;
+                    angle = 300;
                     break;
                 case 4:
-                    break;
-                case 5:
+                    id = 17;
                     break;
                 default:
+                    id = 18;
                     break;
             }
-            this.bind_draw_tuile(deplacement, y, this.get_hextiles_images(), this.get_img_X(33), this.get_img_Y(33));
         }
+        else if(next === -1){ // arrivée
+            return;
+        }
+        else {
+            if (previous === 0) {
+                if (next === 1) {
+                    id = 19;
+                    angle = 120;
+                } else if (next === 2) {
+                    id = 22;
+                    angle = 60;
+                } else if (next === 3) {
+                    id = 17;
+                    angle = 300;
+                } else if (next === 4) {
+                    id = 21;
+                    angle = 120;
+                } else {
+                    id = 19;
+                    angle = 60;
+                }
+            } else if (previous === 1) {
+                if (next === 0) {
+                    id = 19;
+                    angle = 120;
+                } else if (next === 2) {
+                    id = 19;
+                    angle = 180;
+                } else if (next === 3) {
+                    id = 21;
+                    angle = 300;
+                } else if (next === 4) {
+                    id = 17;
+                    angle = 0;
+                } else {
+                    id = 22;
+                }
+            } else if (previous === 2) {
+                if (next === 0) {
+                    id = 21;
+                    angle = 240;
+                } else if (next === 1) {
+                    id = 20;
+                    angle = 0;
+                } else if (next === 3) {
+                    id = 19;
+                    angle = 240;
+                } else if (next === 4) {
+                    id = 21;
+                    angle = 0;
+                } else {
+                    id = 18;
+                    angle = 0;
+                }
+            } else if (previous === 3) {
+                if (next === 0) {
+                    id = 17;
+                    angle = 300;
+                } else if (next === 1) {
+                    id = 21;
+                    angle = 300;
+                } else if (next === 2) {
+                    id = 19;
+                    angle = 240;
+                } else if (next === 4) {
+                    id = 19;
+                    angle = 300;
+                } else {
+                    id = 21;
+                    angle = 60;
+                }
+            } else if (previous === 4) {
+                if (next === 0) {
+                    id = 22;
+                    angle = -60;
+                } else if (next === 1) {
+                    id = 17;
+                } else if (next === 2) {
+                    id = 21;
+                } else if (next === 3) {
+                    id = 19;
+                    angle = 300;
+                } else {
+                    id = 19;
+                }
+            } else {
+                if (next === 0) {
+                    id = 19;
+                    angle = 60;
+                } else if (next === 1) {
+                    id = 22;
+                } else if (next === 2) {
+                    id = 18;
+                } else if (next === 3) {
+                    id = 21;
+                    angle = 60;
+                } else {
+                    id = 19;
+                }
+            }
+        }
+
+        this.draw_river(deplacement, current.getY(), this.HEXTILES_RIVER, this.get_img_X(id), this.get_img_Y(id), angle);
     }
 
     drawNameTown() {
@@ -339,7 +495,7 @@ class Grid {
             let deplacement = this.town[i].getY() % 2 === 0 ? this.town[i].getX() * 48 + 24 : this.town[i].getX() * 48,
                 tuile = this.town[i];
             let numero_ville = Math.floor(Math.random() * (this.town_names.length));
-            this.bind_draw_t(deplacement, tuile.getY(),this.town_names[numero_ville]);
+            this.bind_draw_t(deplacement, tuile.getY(), this.town_names[numero_ville]);
             this.town_names.splice(numero_ville, 1);
         }
     }
@@ -347,6 +503,7 @@ class Grid {
     draw = (x, y) => {
         let deplacement = y % 2 === 0 ? x * 48 + 24 : x * 48,
             tuile = this.tuile_tab[y][x];
+
         this.bind_draw_tuile(deplacement, y, this.get_hextiles_images(), this.get_img_X(tuile.getImageId()), this.get_img_Y(tuile.getImageId()));
     }
 }

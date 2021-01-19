@@ -33,6 +33,17 @@ class View {
         this.ctx.drawImage(hextiles, img_x * 32, img_y * 48, 32, 48, x, y * 14, 32, 48);//18x62
     }
 
+    draw_river(x, y, hextiles, img_x, img_y,angle) {
+        this.ctx.save();
+        let depla_x = x+16, depla_y= y*14+32;
+        //this.ctx.fillRect(depla_x, depla_y, 1, 1);
+        this.ctx.translate(depla_x, depla_y);
+        this.ctx.rotate(angle*Math.PI/180);
+        this.ctx.translate(-depla_x, -depla_y);
+        this.ctx.drawImage(hextiles, img_x * 32, img_y * 48, 32, 48, x, y * 14, 32, 48);
+        this.ctx.restore();
+    }
+
     draw_text(x, y, text) {
         this.ctx.font = '20px BreatheFire';
         //this.ctx.fillStyle = "red";

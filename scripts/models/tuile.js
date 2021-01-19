@@ -68,7 +68,7 @@ class Tuile {
         return this.voisins;
     }
 
-    isNotSeaOrLittoral(){
+    isNotSeaOrLittoral() {
         return this.getImageId() !== 6 && this.getImageId() !== 7;
     }
 
@@ -79,17 +79,16 @@ class Tuile {
         );
     }
 
-    fill_holes(){
+    fill_holes() {
         let terre = 0, eau = 0,
             voisins = this.getVoisins(),
             tot_elev = 0,
             tot_hum = 0;
 
-        for(let i=0; i < voisins.length; i++){
-            if(voisins[i].getImageId() === 7){
+        for (let i = 0; i < voisins.length; i++) {
+            if (voisins[i].getImageId() === 7) {
                 eau++;
-            }
-            else{
+            } else {
                 terre++;
             }
             tot_elev += voisins[i].getElevation();
@@ -99,30 +98,29 @@ class Tuile {
                 voisins[i].setImageId(24);
             }*/
         }
-        if(this.getImageId() === 7) {
-            if(terre > eau && voisins.length === 6){
-                this.setElevation(tot_elev/voisins.length);
-                this.setHumidity(tot_hum/voisins.length);
+        if (this.getImageId() === 7) {
+            if (terre > eau && voisins.length === 6) {
+                this.setElevation(tot_elev / voisins.length);
+                this.setHumidity(tot_hum / voisins.length);
             }
-        }
-        else{
-            if(terre === 0){
+        } else {
+            if (terre === 0) {
                 this.setImageId(7);
             }
         }
         this.littoral();
     }
 
-    littoral(){
+    littoral() {
         let terre = 0,
             voisins = this.getVoisins();
-        for(var i=0; i < voisins.length; i++){
-            if(voisins[i].isNotSeaOrLittoral()){
+        for (var i = 0; i < voisins.length; i++) {
+            if (voisins[i].isNotSeaOrLittoral()) {
                 terre++;
             }
         }
-        if(this.getImageId() === 7) {
-            if(terre > 0){
+        if (this.getImageId() === 7) {
+            if (terre > 0) {
                 this.setImageId(6);
             }
         }
@@ -208,6 +206,6 @@ class Tuile {
         else {
             this.setImageId(5);
         }
-   }
+    }
 
 }

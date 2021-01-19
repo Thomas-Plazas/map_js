@@ -33,6 +33,12 @@ class View {
         this.ctx.drawImage(hextiles, img_x * 32, img_y * 48, 32, 48, x, y * 14, 32, 48);//18x62
     }
 
+    draw_river(x, y, hextiles, img_x, img_y,angle) {
+        this.ctx.rotate(angle);
+        this.ctx.drawImage(hextiles, img_x * 32, img_y * 48, 32, 48, x, y * 14, 32, 48);
+        this.ctx.setTransform(1,0,0,1,0,0);
+    }
+
     draw_text(x, y, text) {
         this.ctx.font = '20px BreatheFire';
         //this.ctx.fillStyle = "red";

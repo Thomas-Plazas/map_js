@@ -56,6 +56,9 @@ class Controller {
     draw_text = (x,y,text) => {
         this.view.draw_text(x,y,text);
     }
+    draw_river = (x,y,text) => {
+        this.view.draw_river(x, y, hextiles, img_x, img_y,angle);
+    }
 }
 
 

@@ -4,6 +4,7 @@ class Grid {
         this.map_L = 18;
         this.tuile_tab = [];
         this.town = [];
+        this.river = [];
         this.HEXTILES_IMAGE = new Image();
         this.set_hextiles_images();
         this.town_names = ["Frignac","Coatmeur","Goasvoen","Revonnas","Aumare","Moliets","Naville","Choriot","Viterbe",
@@ -54,6 +55,9 @@ class Grid {
     bind_draw_text(callback) {
         this.bind_draw_t = callback;
     }
+    bind_draw_river(callback) {
+        this.bind_draw_river = callback;
+    }
 
     generate() {
         this.refresh();
@@ -97,6 +101,7 @@ class Grid {
         this.super_for(this.draw);
         this.super_for(this.add_asset, 0.05, 33, 0); // fleurs
         this.drawNameTown();
+        console.log(this.river.length);
 
 
     }
@@ -284,13 +289,16 @@ class Grid {
             let river = [tuile];
             tuile.setImageId(40);
             let river_tuiles = this.next_river(river);
-            this.draw_river(river_tuiles);
+            //this.draw_river(river_tuiles);
         }
     }
 
     next_river(tuiles){
         let current = tuiles[tuiles.length-1];
-        if(!current.isNotSeaOrLittoral()) return tuiles; // break condition
+        this.river.push(current);//Ajout de la tuile à la liste de rivière
+        if(!current.isNotSeaOrLittoral()){
+           return tuiles; // break condition
+        }
         if(tuiles.length !== 1) current.setImageId(42);
         let voisins = current.getVoisins(),
             min = 1,
@@ -306,33 +314,225 @@ class Grid {
         return this.next_river(tuiles);
     }
 
-    draw_river(tuiles){
-        for(let i=0; i < tuiles.length; i++){
-            let tuile = tuiles[i],
-                voisins = tuile.getVoisins(),
-                x = tuile.getX(),
-                y = tuile.getY(),
-                deplacement = y % 2 === 0 ? x * 48 + 24 : x * 48,
-                next = voisins.indexOf(tuiles[i+1]);
-            switch (next){
-                case 0:
-                    break;
-                case 1:
-                    break;
-                case 2:
-                    break;
-                case 3:
-                    break;
-                case 4:
-                    break;
-                case 5:
-                    break;
-                default:
-                    break;
-            }
-            this.bind_draw_tuile(deplacement, y, this.get_hextiles_images(), this.get_img_X(33), this.get_img_Y(33));
+    set_river(tuiles){
+        this.HEXTILES_IMAGE.src = 'img/fantasyhextiles_randr_4_v1.png';
+        for (let i = 0; i < this.river.length; i++) {
+           if(i===0 || this.current.getVoisins().indexOf(this.river[i-1]===-1){//SI pas de précédent
+             setRiverImage(-1,this.river[i],this.current.getVoisins().indexOf(this.river[i+1]));
+          }
+          if(i===this.river.length || this.current.getVoisins().indexOf(this.river[i+1]===-1){//Si pas de suivant
+            setRiverImage(this.current.getVoisins().indexOf(this.river[i-1]),this.river[i],-1);
+         }
+          else{//Cas global
+             setRiverImage(this.current.getVoisins().indexOf(this.river[i-1]),this.river[i],this.current.getVoisins().indexOf(this.river[i+1]));
+          }
         }
+        this.HEXTILES_IMAGE.src = 'img/fantasyhextiles_v3.png';
     }
+    //index tuile index
+    setRiverImage(previous,current,next){
+      let deplacement = current.getY() % 2 === 0 ? current.getX() * 48 + 24 : current.getX() * 48,
+      var id,angle;
+      if(previous===-1 || next===-1){
+         if(next===0 || previous===0){
+            //17 -60
+            id=17;
+            angle=-60;
+         }
+         else if (next===1 || previous===1) {
+            //18
+            id=18;
+            angle=0;
+         }
+         else if (next===2 || previous===2) {
+            //18
+            id=18;
+            angle=0;
+         }
+         else if (next===3 || previous===3) {
+            //17 60
+            id=17;
+            angle=60;
+         }
+         else if (next===4 || previous===4) {
+            //18
+            id=18;
+            angle=0;
+
+         }
+         else if (next===5 || previous===5) {
+            //18
+            id=18;
+            angle=0;
+         }
+      }
+      else{
+         if(previous ===0){
+            if (next ===1) {
+               //19 120
+               id=19;
+               angle=120;
+            }
+            else if (next ===2) {
+               //22 -120
+               id=22;
+               angle=-120;
+
+            }
+            else if (next ===3) {
+               //17 -60
+               id=17;
+               angle=-60;
+            }
+            else if (next ===4) {
+               //22 120
+               id=22;
+               angle=120;
+            }
+            else{
+               //19 60
+               id=19;
+               angle=60;
+            }
+         }
+         else if (previous ===1) {
+            if(next ===0){
+               //19 120
+               id=19;
+               angle=120;
+            }
+            else if (next ===2) {
+               //19 180
+               id=19;
+               angle=180;
+            }
+            else if (next ===3) {
+               //22 -60
+               id=19;
+               angle=-60;
+            }
+            else if (next ===4) {
+               //17
+               id=17;
+               angle=0;
+            }
+            else{
+               //22 180
+               id=22;
+               angle=180;
+            }
+         }
+         else if (previous ===2) {
+            if(next ===0){
+               //22 -120
+               id=22;
+               angle=-120;
+            }
+            else if (next ===1) {
+               //19 180
+               id=19;
+               angle=180;
+            }
+            else if (next ===3) {
+               //19 -120
+               id=19;
+               angle=-120;
+            }
+            else if (next ===4) {
+               //22
+               id=22;
+               angle=0;
+            }
+            else{
+               //18
+               id=18;
+               angle=0;
+            }
+         }
+         else if (previous ===3) {
+            if(next ===0){
+               //18 60
+               id=18;
+               angle=60;
+            }
+            else if (next ===1) {
+               //22 -60
+               id=22;
+               angle=-60;
+            }
+            else if (next ===2) {
+               //19 -120
+               id=19;
+               angle=-120;
+            }
+            else if (next ===4) {
+               //19 -60
+               id=19;
+               angle=-60;
+            }
+            else{
+               //22 60
+               id=22;
+               angle=60;
+            }
+         }
+         else if (previous ===4) {
+            if(next ===0){
+               //22 120
+               id=22;
+               angle=120;
+            }
+            else if (next ===1) {
+               //17
+               id=17;
+               angle=0;
+            }
+            else if (next ===2) {
+               //22
+               id=22;
+               angle=0;
+            }
+            else if (next ===3) {
+               //19 -60
+               id=19;
+               angle=-60;
+            }
+            else{
+               //19
+               id=19;
+               angle=0;
+            }
+         }
+         else {
+            if(next ===0){
+               //19 60
+               id=19;
+               angle=60;
+            }
+            else if (next ===1) {
+               //22 180
+               id=22;
+               angle=180;
+            }
+            else if (next ===2) {
+               //18
+               id=18;
+               angle=0;
+            }
+            else if (next ===3) {
+               //22 60
+               id=22;
+               angle=60;
+            }
+            else{
+               //19
+               id=19;
+               angle=0;
+            }
+         }
+      }
+      this.draw_river(deplacement,current.getY(), this.get_hextiles_images(), this.get_img_X(id), this.get_img_X(id),angle);
+   }
 
     drawNameTown() {
         for (let i = 0; i < this.town.length; i++) {
@@ -347,6 +547,7 @@ class Grid {
     draw = (x, y) => {
         let deplacement = y % 2 === 0 ? x * 48 + 24 : x * 48,
             tuile = this.tuile_tab[y][x];
+
         this.bind_draw_tuile(deplacement, y, this.get_hextiles_images(), this.get_img_X(tuile.getImageId()), this.get_img_Y(tuile.getImageId()));
     }
 }

@@ -102,10 +102,13 @@ class Grid {
         this.super_for(this.littoral)
         this.super_for(this.add_river, 0.07);
         this.super_for(this.add_town, 0.005);
-        if(this.town.length > 1) this.setTownPath();
         this.super_for(this.draw);
         //this.super_for(this.add_asset, 0.05, 33, 0); // fleurs
         this.set_river();
+        if(this.town.length > 1){
+            this.setTownPath();
+            this.set_path();
+        }
         this.drawNameTown();
 
 
@@ -366,7 +369,8 @@ class Grid {
     }
 
 
-    setRiverImage(previous, current, next) {
+    setRiverImage(previous, current, next, is_road) {
+        if(is_road) console.log(previous, next);
         let deplacement = current.getY() % 2 === 0 ? current.getX() * 48 + 24 : current.getX() * 48,
             id, angle = 0;
         if (previous === -1) { // depart
@@ -492,7 +496,7 @@ class Grid {
                 }
             }
         }
-
+        if(is_road) id -= 16;
         this.draw_river(deplacement, current.getY(), this.HEXTILES_RIVER, this.get_img_X(id), this.get_img_Y(id), angle);
     }
 
@@ -507,59 +511,77 @@ class Grid {
     }
 
     setTownPath() {
-        for (let i = 0; i < 1/*this.town.length*/; i++) {
+        for (let i = 0; i < this.town.length; i++) {
             let depart = this.town[i], arrive = this.town[i+1];
             if (!arrive){ // fin de boucle arrive n'existe pas
                 depart = this.town[this.town.length - 1];
                 arrive = this.town[0];
+                this.nextPath(depart, arrive, [depart, arrive]);
+                this.town_path.push(depart);
                 return;
             }
             else{
-                this.nextPath(depart, arrive, 0);
+                this.nextPath(depart, arrive, [depart, arrive]);
                 this.town_path.push(depart);
             }
         }
     }
 
-    nextPath(depart, arrive, count) {
+    nextPath(depart, arrive, pathes) {
         let voisins = depart.getVoisins(),
-            current = voisins[0],
+            current = depart,
             x_dep = depart.getX(), y_dep = depart.getY(),
             x_arr = arrive.getX(), y_arr = arrive.getY(),
-            cost = this.getCost(current.getImageId());
-        for (let i = 1; i < voisins.length; i++) {
-            //si arrive.x - depart.x < arrive.x - depart -x
-            // Plus petit cost
-            let x_curr = voisins[i].getX(), y_curr = voisins[i].getY();
-            let d_x = Math.abs((x_arr - x_dep)) - Math.abs((x_arr - x_curr)),
+            cost = 30;
+        for (let i = 0; i < voisins.length; i++) {
+            let x_curr = voisins[i].getX(), y_curr = voisins[i].getY(),
+                d_x = Math.abs((x_arr - x_dep)) - Math.abs((x_arr - x_curr)),
                 d_y = Math.abs((y_arr - y_dep)) - Math.abs((y_arr - y_curr)),
-                cost_current = this.getCost(voisins[i].getImageId()) - 2*d_x - 2*d_y;
-                console.log(d_x, d_y, cost_current, cost);
-            if(cost_current <= cost && voisins[i].isNotSeaOrLittoral()){
+                cost_current = this.getCost(voisins[i].getImageId()) - 3*d_x - 3*d_y;
+            if(arrive === voisins[i]){
+                current = voisins[i];
+                this.town_path.push(current);
+                return;
+            }
+            else if(cost_current <= cost && voisins[i].isNotSeaOrLittoral() && pathes.indexOf(voisins[i]) === -1){
                 current = voisins[i];
                 cost = cost_current;
             }
         }
-        console.log("CHOISISI  "+ cost);
-        current.setImageId(40);
-        console.log(depart === current);
         this.town_path.push(current);
-        if (current !== arrive) {
-            this.nextPath(current, arrive, count + 1);
+        if (current !== arrive && current !== depart) {
+            pathes.push(current);
+            //let deplacement = current.getY() % 2 === 0 ? current.getX() * 48 + 24 : current.getX() * 48;
+            //this.bind_draw_tuile(deplacement, current.getY(), this.get_hextiles_images(), this.get_img_X(33), this.get_img_Y(33));
+            this.nextPath(current, arrive, pathes);
+        }
+    }
+
+    set_path(){
+        for (let i = 0; i < this.town_path.length; i++) {
+            let current = this.town_path[i];
+            if (this.town.indexOf(current) !== -1){
+                continue;
+            }else if (i === this.town_path.length || current.getVoisins().indexOf(this.town_path[i + 1]) === -1) { // Si pas de suivant
+                let previous = current.getVoisins().indexOf(this.town_path[i - 1]);
+                this.setRiverImage(previous, current, -1, true);
+            } else {// Cas global
+                let previous = current.getVoisins().indexOf(this.town_path[i - 1]),
+                    next = current.getVoisins().indexOf(this.town_path[i + 1]);
+                this.setRiverImage(previous, current, next, true);
+            }
         }
     }
 
     getCost(id) {
-        if (id === 8 || id === 9 || id === 10 || id === 22 || id === 23 || id === 30 || id === 31 || id === 36 || id === 37) {
-            return -10;
-        } else if (id === 0 || id === 16 || id === 24 || id === 14) {
+        if (id === 0 || id === 16 || id === 24 || id === 14) {
             return 2;
         } else if (id === 1 || id === 13 || id === 26 || id === 17) {
-            return 2;
+            return 6;
         } else if (id === 2 || id === 12 || id === 18) {
-            return 3;
+            return 9;
         } else if (id === 3 || id === 4 || id === 19 || id === 20 || id === 25) {
-            return 4;
+            return 12;
         } else {
             return 100;
         }

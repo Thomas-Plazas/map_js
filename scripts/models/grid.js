@@ -5,6 +5,7 @@ class Grid {
         this.tuile_tab = [];
         this.town = [];
         this.river = [];
+        this.town_path = [];
         this.HEXTILES_IMAGE = new Image();
         this.HEXTILES_RIVER = new Image();
         this.HEXTILES_RIVER.src = 'img/fantasyhextiles_randr_4_v2.png';
@@ -99,8 +100,8 @@ class Grid {
         for (let i = 0; i < 4; i++) this.smooth_neighbors(3);
 
         this.super_for(this.littoral)
-        this.super_for(this.add_river, 0.05);
-        this.super_for(this.add_town, 0.008);
+        this.super_for(this.add_river, 0.07);
+        this.super_for(this.add_town, 0.005);
         this.super_for(this.draw);
         //this.super_for(this.add_asset, 0.05, 33, 0); // fleurs
         this.set_river();
@@ -275,15 +276,24 @@ class Grid {
                     tuile.setImageId(37);
                     this.town.push(tuile);
                 }
-            } else if (tuile.getElevation() < 0.75) {//PLAINE
-                let town = parseInt(Math.random() * 3) + 8;
-                tuile.setImageId(town);
-                this.town.push(tuile);
-            } else if (tuile.getElevation() < 0.84) {//NEIGE
+            } else if (tuile.getElevation() < 0.68) {//PLAINE
+                if (tuile.getTemperature() < 0.44) {//DESERT
+                  let town = parseInt(Math.random() * 2) + 30;
+                  tuile.setImageId(town);
+                  this.town.push(tuile);
+               }
+               else{//NORMALE //SAVANE
+                  let town = parseInt(Math.random() * 3) + 8;
+                  tuile.setImageId(town);
+                  this.town.push(tuile);
+               }
+            }
+            else {//NEIGE
                 let town = parseInt(Math.random() * 2) + 22;
                 tuile.setImageId(town);
                 this.town.push(tuile);
             }
+
         }
     }
 
@@ -357,7 +367,7 @@ class Grid {
         }
     }
 
-    //index tuile index
+
     setRiverImage(previous, current, next) {
         let deplacement = current.getY() % 2 === 0 ? current.getX() * 48 + 24 : current.getX() * 48,
             id, angle = 0;
@@ -499,6 +509,46 @@ class Grid {
             this.town_names.splice(numero_ville, 1);
         }
     }
+    setTownPath(){
+      for (let i = 0; i < this.town.length; i++){
+         if(this.town[i].getTownLinked() <2){
+            //SI arrivé getTownPath <2
+            nextPath(this.town[i],)
+            depart.setTownLinked(depart.getTownLinked()+1);
+            arrive.setTownLinked(arrive.getTownLinked()+1);
+            this.town_path.push(depart);
+
+         }
+      }
+   }
+    nextPath(depart, arrive){
+      let voisins = depart.getVoisins();
+      for (let i = 0; i < voisins.length; i++) {
+         //si arrive.x - depart.x < arrive.x - depart -x
+         // Plus petit cost
+      }
+      this.town_path.push(current);
+      if(current !=== arrive){
+         nextPath(current,arrive);
+      }
+   }
+   getCost(id){
+      if(id===0 ||  id===16 || id===24 || id===14){
+         return 1;
+      }
+      else if (id===1 || id===13 || id===26 || id===17) {
+         return 2;
+      }
+      else if (id===2 || id===12 || id===18) {
+         return 3;
+      }
+      else if (id===3 || id===4 || id===19 || id===20 || id===25) {
+         return 4;
+      }
+      else{
+         return 5;
+      }
+   }
 
     draw = (x, y) => {
         let deplacement = y % 2 === 0 ? x * 48 + 24 : x * 48,

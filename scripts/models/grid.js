@@ -522,7 +522,6 @@ class Grid {
     }
 
     nextPath(depart, arrive, count) {
-        if(count === 40) return;
         let voisins = depart.getVoisins(),
             current = voisins[0],
             x_dep = depart.getX(), y_dep = depart.getY(),
@@ -551,8 +550,10 @@ class Grid {
     }
 
     getCost(id) {
-        if (id === 0 || id === 16 || id === 24 || id === 14) {
-            return 1;
+        if (id === 8 || id === 9 || id === 10 || id === 22 || id === 23 || id === 30 || id === 31 || id === 36 || id === 37) {
+            return -10;
+        } else if (id === 0 || id === 16 || id === 24 || id === 14) {
+            return 2;
         } else if (id === 1 || id === 13 || id === 26 || id === 17) {
             return 2;
         } else if (id === 2 || id === 12 || id === 18) {

@@ -102,6 +102,7 @@ class Grid {
         this.super_for(this.littoral)
         this.super_for(this.add_river, 0.07);
         this.super_for(this.add_town, 0.005);
+        if(this.town.length > 1) this.setTownPath();
         this.super_for(this.draw);
         //this.super_for(this.add_asset, 0.05, 33, 0); // fleurs
         this.set_river();
@@ -258,7 +259,7 @@ class Grid {
 
     add_town = (x, y, hauteur, largeur, frequence) => {
         let tuile = this.tuile_tab[y][x];
-        if(this.river.indexOf(tuile) !== -1) return; // si on est sur une tuile de river
+        if (this.river.indexOf(tuile) !== -1) return; // si on est sur une tuile de river
         if (0.05 > Math.random() && tuile.getImageId() === 6) {
             tuile.setImageId(38);
         }
@@ -278,17 +279,15 @@ class Grid {
                 }
             } else if (tuile.getElevation() < 0.68) {//PLAINE
                 if (tuile.getTemperature() < 0.44) {//DESERT
-                  let town = parseInt(Math.random() * 2) + 30;
-                  tuile.setImageId(town);
-                  this.town.push(tuile);
-               }
-               else{//NORMALE //SAVANE
-                  let town = parseInt(Math.random() * 3) + 8;
-                  tuile.setImageId(town);
-                  this.town.push(tuile);
-               }
-            }
-            else {//NEIGE
+                    let town = parseInt(Math.random() * 2) + 30;
+                    tuile.setImageId(town);
+                    this.town.push(tuile);
+                } else {//NORMALE //SAVANE
+                    let town = parseInt(Math.random() * 3) + 8;
+                    tuile.setImageId(town);
+                    this.town.push(tuile);
+                }
+            } else {//NEIGE
                 let town = parseInt(Math.random() * 2) + 22;
                 tuile.setImageId(town);
                 this.town.push(tuile);
@@ -358,8 +357,7 @@ class Grid {
                 index_of_previous_voisins = i !== 0 ? current.getVoisins().indexOf(this.river[i - 1]) : false;
             if (i === 0 || index_of_previous_voisins === -1) {//SI pas de précédent
                 this.setRiverImage(-1, current, current.getVoisins().indexOf(this.river[i + 1]));
-            }
-            else if (i === this.river.length || current.getVoisins().indexOf(this.river[i + 1]) === -1) { // Si pas de suivant
+            } else if (i === this.river.length || current.getVoisins().indexOf(this.river[i + 1]) === -1) { // Si pas de suivant
                 this.setRiverImage(current.getVoisins().indexOf(this.river[i - 1]), current, -1);
             } else {// Cas global
                 this.setRiverImage(current.getVoisins().indexOf(this.river[i - 1]), current, current.getVoisins().indexOf(this.river[i + 1]));
@@ -371,8 +369,8 @@ class Grid {
     setRiverImage(previous, current, next) {
         let deplacement = current.getY() % 2 === 0 ? current.getX() * 48 + 24 : current.getX() * 48,
             id, angle = 0;
-        if(previous === -1){ // depart
-            switch (next){
+        if (previous === -1) { // depart
+            switch (next) {
                 case 0:
                     id = 17;
                     angle = 300;
@@ -394,11 +392,9 @@ class Grid {
                     id = 18;
                     break;
             }
-        }
-        else if(next === -1){ // arrivée
+        } else if (next === -1) { // arrivée
             return;
-        }
-        else {
+        } else {
             if (previous === 0) {
                 if (next === 1) {
                     id = 19;
@@ -509,46 +505,63 @@ class Grid {
             this.town_names.splice(numero_ville, 1);
         }
     }
-    setTownPath(){
-      for (let i = 0; i < this.town.length; i++){
-         if(this.town[i].getTownLinked() <2){
-            //SI arrivé getTownPath <2
-            nextPath(this.town[i],)
-            depart.setTownLinked(depart.getTownLinked()+1);
-            arrive.setTownLinked(arrive.getTownLinked()+1);
-            this.town_path.push(depart);
 
-         }
-      }
-   }
-    nextPath(depart, arrive){
-      let voisins = depart.getVoisins();
-      for (let i = 0; i < voisins.length; i++) {
-         //si arrive.x - depart.x < arrive.x - depart -x
-         // Plus petit cost
-      }
-      this.town_path.push(current);
-      if(current !=== arrive){
-         nextPath(current,arrive);
-      }
-   }
-   getCost(id){
-      if(id===0 ||  id===16 || id===24 || id===14){
-         return 1;
-      }
-      else if (id===1 || id===13 || id===26 || id===17) {
-         return 2;
-      }
-      else if (id===2 || id===12 || id===18) {
-         return 3;
-      }
-      else if (id===3 || id===4 || id===19 || id===20 || id===25) {
-         return 4;
-      }
-      else{
-         return 5;
-      }
-   }
+    setTownPath() {
+        for (let i = 0; i < 1/*this.town.length*/; i++) {
+            let depart = this.town[i], arrive = this.town[i+1];
+            if (!arrive){ // fin de boucle arrive n'existe pas
+                depart = this.town[this.town.length - 1];
+                arrive = this.town[0];
+                return;
+            }
+            else{
+                this.nextPath(depart, arrive, 0);
+                this.town_path.push(depart);
+            }
+        }
+    }
+
+    nextPath(depart, arrive, count) {
+        if(count === 3) return;
+        let voisins = depart.getVoisins(),
+            current = voisins[0],
+            x_dep = depart.getX(), y_dep = depart.getY(),
+            x_arr = arrive.getX(), y_arr = arrive.getY(),
+            cost = this.getCost(current.getImageId());
+        for (let i = 1; i < voisins.length; i++) {
+            //si arrive.x - depart.x < arrive.x - depart -x
+            // Plus petit cost
+            let x_curr = voisins[i].getX(), y_curr = voisins[i].getY();
+            let d_x = (x_arr - x_dep) - (x_arr - x_curr),
+                d_y = (y_arr - y_dep) - (y_arr - y_curr),
+                cost_current = this.getCost(voisins[i].getImageId()) + 2*d_x + 2*d_y;
+                console.log(d_x, d_y, cost_current, cost);
+            if(cost_current <= cost && voisins[i].isNotSeaOrLittoral()){
+                current = voisins[i];
+                cost = cost_current;
+            }
+        }
+        current.setImageId(40);
+        console.log(depart === current);
+        this.town_path.push(current);
+        if (current !== arrive) {
+            this.nextPath(current, arrive, count + 1);
+        }
+    }
+
+    getCost(id) {
+        if (id === 0 || id === 16 || id === 24 || id === 14) {
+            return 1;
+        } else if (id === 1 || id === 13 || id === 26 || id === 17) {
+            return 2;
+        } else if (id === 2 || id === 12 || id === 18) {
+            return 3;
+        } else if (id === 3 || id === 4 || id === 19 || id === 20 || id === 25) {
+            return 4;
+        } else {
+            return 100;
+        }
+    }
 
     draw = (x, y) => {
         let deplacement = y % 2 === 0 ? x * 48 + 24 : x * 48,

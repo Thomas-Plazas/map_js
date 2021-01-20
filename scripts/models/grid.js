@@ -522,7 +522,7 @@ class Grid {
     }
 
     nextPath(depart, arrive, count) {
-        if(count === 3) return;
+        if(count === 40) return;
         let voisins = depart.getVoisins(),
             current = voisins[0],
             x_dep = depart.getX(), y_dep = depart.getY(),
@@ -532,15 +532,16 @@ class Grid {
             //si arrive.x - depart.x < arrive.x - depart -x
             // Plus petit cost
             let x_curr = voisins[i].getX(), y_curr = voisins[i].getY();
-            let d_x = (x_arr - x_dep) - (x_arr - x_curr),
-                d_y = (y_arr - y_dep) - (y_arr - y_curr),
-                cost_current = this.getCost(voisins[i].getImageId()) + 2*d_x + 2*d_y;
+            let d_x = Math.abs((x_arr - x_dep)) - Math.abs((x_arr - x_curr)),
+                d_y = Math.abs((y_arr - y_dep)) - Math.abs((y_arr - y_curr)),
+                cost_current = this.getCost(voisins[i].getImageId()) - 2*d_x - 2*d_y;
                 console.log(d_x, d_y, cost_current, cost);
             if(cost_current <= cost && voisins[i].isNotSeaOrLittoral()){
                 current = voisins[i];
                 cost = cost_current;
             }
         }
+        console.log("CHOISISI  "+ cost);
         current.setImageId(40);
         console.log(depart === current);
         this.town_path.push(current);

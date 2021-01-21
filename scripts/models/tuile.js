@@ -1,4 +1,5 @@
 class Tuile {
+   // Constructeur
     constructor(x, y) {
         this.x = x;
         this.y = y;
@@ -9,6 +10,7 @@ class Tuile {
         this.imageId = 0;
     }
 
+    // Position de la tuile
     getX() {
         return this.x;
     }
@@ -25,6 +27,7 @@ class Tuile {
         this.y = y;
     }
 
+    // Paramètres de la tuile
     getHumidity() {
         return this.humidity;
     }
@@ -41,6 +44,7 @@ class Tuile {
         return this.imageId;
     }
 
+    // Modifications des paramètres de la tuile
     setHumidity(h) {
         this.humidity = h;
         this.generateImageId();
@@ -60,6 +64,7 @@ class Tuile {
         this.imageId = id;
     }
 
+    // Tuiles voisines à la tuile courante
     setVoisins(v) {
         this.voisins = v;
     }
@@ -68,23 +73,25 @@ class Tuile {
         return this.voisins;
     }
 
-    isNotSeaOrLittoral() {
-        return this.getImageId() !== 6 && this.getImageId() !== 7;
-    }
-
-    //TODO
     isVoisinDe(id) {
         this.getVoisins().forEach(element =>
             console.log(element)
         );
     }
 
+    // Vérification qu'une tuile n'est ni de la mer, ni du littoral
+    isNotSeaOrLittoral() {
+        return this.getImageId() !== 6 && this.getImageId() !== 7;
+    }
+
+    // Remplissage du littoral, en modifiant les tuiles de mer isolées dans le littoral en littoral
     fill_holes() {
         let terre = 0, eau = 0,
             voisins = this.getVoisins(),
             tot_elev = 0,
             tot_hum = 0;
 
+         // Parcours des voisins de la tuile courante
         for (let i = 0; i < voisins.length; i++) {
             if (voisins[i].getImageId() === 7) {
                 eau++;
@@ -93,17 +100,17 @@ class Tuile {
             }
             tot_elev += voisins[i].getElevation();
             tot_hum += voisins[i].getHumidity();
-            /*test
-            if(voisins[i] !== undefined){
-                voisins[i].setImageId(24);
-            }*/
-        }
+         }
+
+         // La tuile courante est une tuile mer
         if (this.getImageId() === 7) {
+           // Majorité de voisins terre et vérification qu'on est pas en bord de carte
             if (terre > eau && voisins.length === 6) {
                 this.setElevation(tot_elev / voisins.length);
                 this.setHumidity(tot_hum / voisins.length);
             }
         } else {
+           // Aucune tuile terre aux alentours
             if (terre === 0) {
                 this.setImageId(7);
             }
@@ -114,31 +121,38 @@ class Tuile {
     littoral() {
         let terre = 0,
             voisins = this.getVoisins();
+         // Parcours des voisins de la tuile courante
         for (var i = 0; i < voisins.length; i++) {
             if (voisins[i].isNotSeaOrLittoral()) {
                 terre++;
             }
         }
+
+        // Tuile courante = tuile mer
         if (this.getImageId() === 7) {
+           // Si il existe au moins une tuile voisine terre
             if (terre > 0) {
                 this.setImageId(6);
             }
         }
     }
 
+    // Génération de la tuile
     generateImageId() {
 
         var e = this.getElevation(),
             m = this.getHumidity(),
             t = this.getTemperature();
 
-        // MER
+        //  biome MER
         if (e < 0.24) {
             this.setImageId(7);
         }
-        // Plaine
+        // continent non enneigé
         else if (e < 0.68) {
-            if (t < 0.44) {//DESERT
+
+           // biome DESERT
+            if (t < 0.44) {
                if(m < 0.44){
                   this.setImageId(24);
                }
@@ -154,7 +168,9 @@ class Tuile {
                else{
                   this.setImageId(28);
                }
-            } else if (t < 0.49) {//SAVANE
+
+            // biome SAVANE
+            } else if (t < 0.49) {
 
                 if(m < 0.45){
                   this.setImageId(14);
@@ -165,7 +181,8 @@ class Tuile {
                else {
                   this.setImageId(12);
                }
-            } else if (t < 0.7) {//NORMALE
+            // biome PLAINE
+            } else if (t < 0.7) {
                if(m < 0.44){
                   this.setImageId(0);
                }
@@ -184,7 +201,7 @@ class Tuile {
             }
 
         }
-        // Neige
+        // Continent enneigé = biome NEIGE
         else if (e < 0.805) {
             if(m < 0.49){
                this.setImageId(16);
@@ -202,7 +219,7 @@ class Tuile {
                this.setImageId(20);
             }
         }
-        // Montagne
+        // Montagne enneigées
         else {
             this.setImageId(5);
         }

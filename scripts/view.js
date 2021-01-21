@@ -12,22 +12,6 @@ class View {
         return this.ctx;
     }
 
-    get_map_H() {
-        return document.getElementById("hauteur");
-    }
-
-    get_map_L() {
-        return document.getElementById("largeur");
-    }
-
-    set_map_H(val) {
-        this.get_map_H().value = val;
-    }
-
-    set_map_L(val) {
-        this.get_map_L().value = val;
-    }
-
     draw_tuile(x, y, hextiles, img_x, img_y) {
         //this.ctx.drawImage(hextiles, img_x * 32, img_y * 48, 32, 48, x/2, y * 7, 16, 24);//36x
         this.ctx.drawImage(hextiles, img_x * 32, img_y * 48, 32, 48, x, y * 14, 32, 48);//18x62

@@ -1,7 +1,11 @@
 # map_js
 
-https://github.com/PAJEAN/cours_javascript/tree/master/TP/TP_MapGenerator
+Hextiles map generator.
 
-https://github.com/PAJEAN/cours_javascript/blob/master/javascript.ipynb
+Generate cities, river and roads
 
-https://github.com/josephg/noisejs
+Thomas PLAZAS
+
+Alexandre BALMAIN
+
+Gregoire MATHIAN

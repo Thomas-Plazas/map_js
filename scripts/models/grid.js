@@ -1,37 +1,37 @@
 class Grid {
     constructor() {
-        this.map_H = 62;
-        this.map_L = 18;
-        this.tuile_tab = [];
+        this.map_height = 62;
+        this.map_width = 18;
+        this.grid = [];
+        this.river_path = [];
         this.town = [];
-        this.river = [];
         this.town_path = [];
-        this.HEXTILES_IMAGE = new Image();
-        this.HEXTILES_RIVER = new Image();
-        this.HEXTILES_RIVER.src = 'img/fantasyhextiles_randr_4_v2.png';
-        this.set_hextiles_images('img/fantasyhextiles_v3.png');
         this.town_names = ["Frignac", "Coatmeur", "Goasvoen", "Revonnas", "Aumare", "Moliets", "Naville", "Choriot", "Viterbe",
             "Lespart", "Marcilly", "Chaussoy", "Cabrier", "Escots", "Ladoux", "Maroncourt", "Auxais", "Cramait", "Chambly",
             "Milaria", "Ruffec", "Meillon", "Limé", "Clussais", "Mienval"]
+        this.HEXTILES_IMAGE = new Image();
+        this.HEXTILES_PATH = new Image();
+        this.HEXTILES_PATH.src = 'img/fantasyhextiles_randr_4_v2.png';
+        this.set_hextiles_images('img/fantasyhextiles_v3.png');
     }
 
     set_hextiles_images(src) {
         this.HEXTILES_IMAGE.src = src;
     }
 
-    get_map_H() {
-        return this.map_H;
+    get_map_height() {
+        return this.map_height;
     }
 
-    get_map_L() {
-        return this.map_L;
+    get_map_width() {
+        return this.map_width;
     }
 
-    get_img_X(id) {
+    get_img_x(id) {
         return id % 8;
     }
 
-    get_img_Y(id) {
+    get_img_y(id) {
         return parseInt(id / 8);
     }
 
@@ -39,608 +39,498 @@ class Grid {
         return this.HEXTILES_IMAGE;
     }
 
-    bind_draw(callback) {
-        this.bind_draw_tuile = callback;
-    }
-
-    bind_refresh(callback) {
-        this.refresh = callback;
+    bind_draw_tile(callback) {
+        this.draw_tile = callback;
     }
 
     bind_draw_text(callback) {
-        this.bind_draw_t = callback;
+        this.draw_text = callback;
     }
 
-    bind_draw_river(callback) {
-        this.draw_river = callback;
+    bind_draw_path(callback) {
+        this.draw_path = callback;
     }
 
     generate() {
-        this.refresh();
-        let hauteur = this.get_map_H(),
-            largeur = this.get_map_L();
-        for (let y = 0; y < hauteur; y++) {
-            this.tuile_tab[y] = [];
-            for (let x = 0; x < largeur; x++) {
-                var nx = x / largeur - 0.5, ny = y / hauteur - 0.5,
-                    t = new Tuile(x, y);
-
-                this.tuile_tab[y][x] = t;
-                var gen = new SimplexNoise(),
+        let height = this.get_map_height(),
+            width = this.get_map_width();
+        for (let y = 0; y < height; y++) {
+            this.grid[y] = [];
+            for (let x = 0; x < width; x++) {
+                let nx = x / width - 0.5, ny = y / height - 0.5,
+                    t = new Tile(x, y);
+                this.grid[y][x] = t;
+                let gen = new SimplexNoise(),
                     gen2 = new SimplexNoise(),
                     gen3 = new SimplexNoise(),
-                    e = gen.noise2D(nx, ny) / 2 + 0.5,
-                    h = gen2.noise2D(nx, ny) / 2 + 0.5,
-                    temp = gen3.noise2D(nx, ny) / 2 + 0.5,
-                    d = Math.sqrt(nx * nx + ny * ny) / Math.sqrt(0.2);
+                    elevation = gen.noise2D(nx, ny) / 2 + 0.5,
+                    humidity = gen2.noise2D(nx, ny) / 2 + 0.5,
+                    temperature = gen3.noise2D(nx, ny) / 2 + 0.5,
+                    distance = Math.sqrt(nx * nx + ny * ny) / Math.sqrt(0.2);
 
-                e = (2 + e - d * 2) / 2.85;
-                t.setTemperature(temp, false);
-                t.setElevation(e, false);
-                t.setHumidity(h);
+                elevation = (2 + elevation - distance * 2) / 2.85;
+                t.set_temperature(temperature, false);
+                t.set_elevation(elevation, false);
+                t.set_humidity(humidity);
             }
         }
-        this.super_for(this.find_voisins);
-        for (let y = 0; y < hauteur; y++) {
-            for (let x = 0; x < largeur; x++) {
-                let tuile = this.tuile_tab[y][x];
-                //tuile.fill_holes();
-            }
-        }
-        this.smooth_neighbors(1);
-        this.smooth_neighbors(2);
-        for (let i = 0; i < 4; i++) this.smooth_neighbors(3);
+        this.super_for(this.find_neighbors);
+        this.smooth_neighbors(1); // elevation
+        this.smooth_neighbors(2); // humidity
+        for (let i = 0; i < 4; i++) this.smooth_neighbors(3); // temperature
 
         this.super_for(this.littoral)
-        this.super_for(this.add_river, 0.07);
-        this.super_for(this.add_town, 0.005);
-        this.super_for(this.draw);
-        //this.super_for(this.add_asset, 0.05, 33, 0); // fleurs
-        this.set_river();
-        if(this.town.length > 1){
-            this.setTownPath();
-            //this.set_path();
+        this.super_for(this.add_rivers, 0.07);
+        this.super_for(this.add_towns, 0.005);
+        this.super_for(this.draw_grid);
+        this.draw_river();
+        if (this.town.length > 1) {
+            this.set_town_path();
+            this.draw_town_path();
         }
-        this.drawNameTown();
-
-
+        this.draw_town_name();
+        this.super_for(this.add_asset, 0.05, 33, 0); // flowers
     }
 
     // factor double for loops to avoid duplicate code lines
-    super_for(callback, frequence, id_asset, id_tuile) {
-        let hauteur = this.get_map_H(),
-            largeur = this.get_map_L();
-        for (let y = 0; y < hauteur; y++) {
-            for (let x = 0; x < largeur; x++) {
-                callback(x, y, hauteur, largeur, frequence, id_asset, id_tuile);
+    super_for(callback, frequency, id_asset, id_tile) {
+        let height = this.get_map_height(),
+            width = this.get_map_width();
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                callback(x, y, height, width, frequency, id_asset, id_tile);
             }
         }
     }
 
-    littoral = (x, y) => {
-        this.tuile_tab[y][x].littoral();
-    }
-
-    find_voisins = (x, y, hauteur, largeur) => {
-        let tuile = this.tuile_tab[y][x],
-            voisins = [];
+    find_neighbors = (x, y, height, width) => {
+        let tile = this.grid[y][x],
+            neighbors = [];
         if (y === 0) {
             if (x === 0) {
-                voisins.push(this.tuile_tab[y + 1][x]);
-                voisins.push(this.tuile_tab[y + 2][x]);
-                voisins.push(this.tuile_tab[y + 1][x + 1]);
-            } else if (x === largeur - 1) {
-                voisins.push(this.tuile_tab[y + 1][x]);
-                voisins.push(this.tuile_tab[y + 2][x]);
+                neighbors.push(this.grid[y + 1][x]);
+                neighbors.push(this.grid[y + 2][x]);
+                neighbors.push(this.grid[y + 1][x + 1]);
+            } else if (x === width - 1) {
+                neighbors.push(this.grid[y + 1][x]);
+                neighbors.push(this.grid[y + 2][x]);
             } else {
-                voisins.push(this.tuile_tab[y + 1][x]);
-                voisins.push(this.tuile_tab[y + 2][x]);
-                voisins.push(this.tuile_tab[y + 1][x + 1]);
-                voisins.push(this.tuile_tab[y + 1][x]);
-                voisins.push(this.tuile_tab[y + 2][x]);
+                neighbors.push(this.grid[y + 1][x]);
+                neighbors.push(this.grid[y + 2][x]);
+                neighbors.push(this.grid[y + 1][x + 1]);
+                neighbors.push(this.grid[y + 1][x]);
+                neighbors.push(this.grid[y + 2][x]);
             }
-        } else if (y === hauteur - 1) {
+        } else if (y === height - 1) {
             if (x === 0) {
-                voisins.push(this.tuile_tab[y - 2][x]);
-                voisins.push(this.tuile_tab[y - 1][x]);
-            } else if (x === largeur - 1) {
-                voisins.push(this.tuile_tab[y - 2][x]);
-                voisins.push(this.tuile_tab[y - 1][x - 1]);
-                voisins.push(this.tuile_tab[y - 1][x]);
+                neighbors.push(this.grid[y - 2][x]);
+                neighbors.push(this.grid[y - 1][x]);
+            } else if (x === width - 1) {
+                neighbors.push(this.grid[y - 2][x]);
+                neighbors.push(this.grid[y - 1][x - 1]);
+                neighbors.push(this.grid[y - 1][x]);
             } else {
-                voisins.push(this.tuile_tab[y - 2][x]);
-                voisins.push(this.tuile_tab[y - 1][x]);
-                voisins.push(this.tuile_tab[y - 2][x]);
-                voisins.push(this.tuile_tab[y - 1][x - 1]);
-                voisins.push(this.tuile_tab[y - 1][x]);
+                neighbors.push(this.grid[y - 2][x]);
+                neighbors.push(this.grid[y - 1][x]);
+                neighbors.push(this.grid[y - 2][x]);
+                neighbors.push(this.grid[y - 1][x - 1]);
+                neighbors.push(this.grid[y - 1][x]);
             }
         } else {
             if (x === 0) {
-                voisins.push(this.tuile_tab[y - 1][x]);
-                voisins.push(this.tuile_tab[y + 1][x]);
-                if (y + 2 < hauteur) voisins.push(this.tuile_tab[y + 2][x]);
-                if (y - 2 > 0) voisins.push(this.tuile_tab[y - 2][x]);
+                neighbors.push(this.grid[y - 1][x]);
+                neighbors.push(this.grid[y + 1][x]);
+                if (y + 2 < height) neighbors.push(this.grid[y + 2][x]);
+                if (y - 2 > 0) neighbors.push(this.grid[y - 2][x]);
                 if (y % 2 === 0) {
-                    voisins.push(this.tuile_tab[y + 1][x + 1]);
-                    voisins.push(this.tuile_tab[y - 1][x + 1]);
+                    neighbors.push(this.grid[y + 1][x + 1]);
+                    neighbors.push(this.grid[y - 1][x + 1]);
                 }
-            } else if (x === largeur - 1) {
-                voisins.push(this.tuile_tab[y - 1][x]);
-                voisins.push(this.tuile_tab[y + 1][x]);
-                if (y + 2 < hauteur) voisins.push(this.tuile_tab[y + 2][x]);
-                if (y - 2 > 0) voisins.push(this.tuile_tab[y - 2][x]);
+            } else if (x === width - 1) {
+                neighbors.push(this.grid[y - 1][x]);
+                neighbors.push(this.grid[y + 1][x]);
+                if (y + 2 < height) neighbors.push(this.grid[y + 2][x]);
+                if (y - 2 > 0) neighbors.push(this.grid[y - 2][x]);
                 if (y % 2 === 1) {
-                    voisins.push(this.tuile_tab[y + 1][x - 1]);
-                    voisins.push(this.tuile_tab[y - 1][x - 1]);
+                    neighbors.push(this.grid[y + 1][x - 1]);
+                    neighbors.push(this.grid[y - 1][x - 1]);
                 }
             } else {
                 if (y % 2 === 0) {
-                    if (y - 2 > 0) voisins.push(this.tuile_tab[y - 2][x]);
-                    voisins.push(this.tuile_tab[y - 1][x + 1]);
-                    voisins.push(this.tuile_tab[y + 1][x + 1]);
-                    if (y + 2 < hauteur) voisins.push(this.tuile_tab[y + 2][x]);
-                    voisins.push(this.tuile_tab[y + 1][x]);
-                    voisins.push(this.tuile_tab[y - 1][x]);
+                    if (y - 2 > 0) neighbors.push(this.grid[y - 2][x]);
+                    neighbors.push(this.grid[y - 1][x + 1]);
+                    neighbors.push(this.grid[y + 1][x + 1]);
+                    if (y + 2 < height) neighbors.push(this.grid[y + 2][x]);
+                    neighbors.push(this.grid[y + 1][x]);
+                    neighbors.push(this.grid[y - 1][x]);
                 } else {
-                    if (y - 2 > 0) voisins.push(this.tuile_tab[y - 2][x]);
-                    voisins.push(this.tuile_tab[y - 1][x]);
-                    voisins.push(this.tuile_tab[y + 1][x]);
-                    if (y + 2 < hauteur) voisins.push(this.tuile_tab[y + 2][x]);
-                    voisins.push(this.tuile_tab[y + 1][x - 1]);
-                    voisins.push(this.tuile_tab[y - 1][x - 1]);
+                    if (y - 2 > 0) neighbors.push(this.grid[y - 2][x]);
+                    neighbors.push(this.grid[y - 1][x]);
+                    neighbors.push(this.grid[y + 1][x]);
+                    if (y + 2 < height) neighbors.push(this.grid[y + 2][x]);
+                    neighbors.push(this.grid[y + 1][x - 1]);
+                    neighbors.push(this.grid[y - 1][x - 1]);
                 }
             }
         }
-        tuile.setVoisins(voisins);
-        /* test voisins
-        var x_cor = 12;
-        var y_cor = 15;
-        this.tuile_tab[y_cor][x_cor].fill_holes();
-        this.tuile_tab[y_cor][x_cor].setImageId(16);*/
+        tile.set_neighbors(neighbors);
     }
 
     smooth_neighbors(smooth_type) {
-        var tabs = [];
-        let hauteur = this.get_map_H(),
-            largeur = this.get_map_L();
-        for (let y = 0; y < hauteur; y++) {
+        let tabs = [];
+        let height = this.get_map_height(),
+            width = this.get_map_width();
+        for (let y = 0; y < height; y++) {
             tabs[y] = [];
-            for (let x = 0; x < largeur; x++) {
-                let tuile = this.tuile_tab[y][x],
-                    voisins = tuile.getVoisins(),
+            for (let x = 0; x < width; x++) {
+                let tile = this.grid[y][x],
+                    neighbors = tile.get_neighbors(),
                     e_moy = 0,
                     h_moy = 0,
                     t_moy = 0;
-                for (let i = 0; i < voisins.length; i++) {
-                    e_moy += voisins[i].getElevation();
-                    h_moy += voisins[i].getHumidity();
-                    t_moy += voisins[i].getTemperature();
+                for (let i = 0; i < neighbors.length; i++) {
+                    e_moy += neighbors[i].get_elevation();
+                    h_moy += neighbors[i].get_humidity();
+                    t_moy += neighbors[i].get_temperature();
                 }
-                e_moy /= voisins.length;
-                h_moy /= voisins.length;
-                t_moy /= voisins.length;
+                e_moy /= neighbors.length;
+                h_moy /= neighbors.length;
+                t_moy /= neighbors.length;
                 tabs[y][x] = {
-                    tuile: tuile,
+                    tile: tile,
                     elev: e_moy,
                     humidity: h_moy,
                     temp: t_moy
                 }
             }
         }
-        for (let y = 0; y < hauteur; y++) {
-            for (let x = 0; x < largeur; x++) {
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
                 switch (smooth_type) {
                     case 1:
-                        tabs[y][x].tuile.setElevation(tabs[y][x].elev);
+                        tabs[y][x].tile.set_elevation(tabs[y][x].elev);
                         break;
                     case 2:
-                        tabs[y][x].tuile.setHumidity(tabs[y][x].humidity);
+                        tabs[y][x].tile.set_humidity(tabs[y][x].humidity);
                         break;
                     default:
-                        tabs[y][x].tuile.setTemperature(tabs[y][x].temp);
+                        tabs[y][x].tile.set_temperature(tabs[y][x].temp);
                         break;
                 }
             }
         }
     }
 
-    add_asset = (x, y, hauteur, largeur, frequence, id_asset, id_tuile) => {
+    littoral = (x, y) => {
+        this.grid[y][x].littoral();
+    }
+
+    add_asset = (x, y, height, width, frequency, id_asset, id_tile) => {
         let deplacement = y % 2 === 0 ? x * 48 + 24 : x * 48,
-            tuile = this.tuile_tab[y][x];
-        if (frequence > Math.random() && tuile.getImageId() === id_tuile) {
-            this.bind_draw_tuile(deplacement, y, this.get_hextiles_images(), this.get_img_X(id_asset), this.get_img_Y(id_asset));
+            tile = this.grid[y][x];
+        if (frequency > Math.random() && tile.get_image_id() === id_tile && this.river_path.indexOf(tile) === -1 && this.town_path.indexOf(tile) === -1) {
+            this.draw_tile(deplacement, y, this.get_hextiles_images(), this.get_img_x(id_asset), this.get_img_y(id_asset));
         }
     }
 
-    add_town = (x, y, hauteur, largeur, frequence) => {
-        let tuile = this.tuile_tab[y][x];
-        if (this.river.indexOf(tuile) !== -1) return; // si on est sur une tuile de river
-        if (0.05 > Math.random() && tuile.getImageId() === 6) {
-            tuile.setImageId(38);
+    add_towns = (x, y, height, width, frequency) => {
+        let tile = this.grid[y][x];
+        if (this.river_path.indexOf(tile) !== -1) return; // si on est sur une tuile de river
+        if (0.05 > Math.random() && tile.get_image_id() === 6) {
+            tile.set_image_id(38);
         }
-        let voisins = tuile.getVoisins();
-        for (let i = 0; i < voisins.length; i++) {
-            if (this.town.indexOf(voisins[i]) !== -1) return;
+        let neighbors = tile.get_neighbors();
+        for (let i = 0; i < neighbors.length; i++) {
+            if (this.town.indexOf(neighbors[i]) !== -1) return;
         }
-        if (frequence > Math.random() && tuile.getImageId() !== 7 && tuile.getVoisins().length === 6) {
-            if (tuile.getImageId() === 6) {//LITORAL
-                let voisins = tuile.getVoisins();
-                if (voisins[4].isNotSeaOrLittoral() || voisins[5].isNotSeaOrLittoral()) {
-                    tuile.setImageId(36);
-                    this.town.push(tuile);
-                } else if (voisins[2].isNotSeaOrLittoral() || voisins[1].isNotSeaOrLittoral()) {
-                    tuile.setImageId(37);
-                    this.town.push(tuile);
+        if (frequency > Math.random() && tile.get_image_id() !== 7 && tile.get_neighbors().length === 6) {
+            if (tile.get_image_id() === 6) {//LITORAL
+                let neighbors = tile.get_neighbors();
+                if (neighbors[4].isNotSeaOrLittoral() || neighbors[5].isNotSeaOrLittoral()) {
+                    tile.set_image_id(36);
+                    this.town.push(tile);
+                } else if (neighbors[2].isNotSeaOrLittoral() || neighbors[1].isNotSeaOrLittoral()) {
+                    tile.set_image_id(37);
+                    this.town.push(tile);
                 }
-            } else if (tuile.getElevation() < 0.68) {//PLAINE
-                if (tuile.getTemperature() < 0.44) {//DESERT
+            } else if (tile.get_elevation() < 0.68) {//PLAINE
+                if (tile.get_temperature() < 0.44) {//DESERT
                     let town = parseInt(Math.random() * 2) + 30;
-                    tuile.setImageId(town);
-                    this.town.push(tuile);
+                    tile.set_image_id(town);
+                    this.town.push(tile);
                 } else {//NORMALE //SAVANE
                     let town = parseInt(Math.random() * 3) + 8;
-                    tuile.setImageId(town);
-                    this.town.push(tuile);
+                    tile.set_image_id(town);
+                    this.town.push(tile);
                 }
             } else {//NEIGE
                 let town = parseInt(Math.random() * 2) + 22;
-                tuile.setImageId(town);
-                this.town.push(tuile);
+                tile.set_image_id(town);
+                this.town.push(tile);
             }
 
         }
     }
 
-    add_river = (x, y, hauteur, largeur, frequence) => {
-        let tuile = this.tuile_tab[y][x];
-        if (frequence > Math.random() && tuile.getElevation() > 0.7 && tuile.getElevation() < 0.805) {
-            let river = [tuile];
-            this.next_river(river);
+    add_rivers = (x, y, height, width, frequency) => {
+        let tile = this.grid[y][x];
+        if (frequency > Math.random() && tile.get_elevation() > 0.7 && tile.get_elevation() < 0.805) {
+            this.river_pathfinding([tile]);
         }
     }
 
-    next_river(tuiles) {
-        let current = tuiles[tuiles.length - 1],
-            e = current.getElevation(),
-            t = current.getTemperature();
+    river_pathfinding(river_tiles) {
+        let current = river_tiles[river_tiles.length - 1],
+            elevation = current.get_elevation(),
+            temperature = current.get_temperature();
 
         // MER
-        if (e < 0.24) {
-            //current.setImageId(7);
+        if (elevation < 0.24) {
+            //current.set_image_id(7);
         }
         // Plaine
-        else if (e < 0.68) {
-            if (t < 0.44) {//DESERT
-                current.setImageId(24);
-            } else if (t < 0.49) {//SAVANE
-                current.setImageId(14);
-            } else if (t < 0.7) {//NORMALE
-                current.setImageId(0);
+        else if (elevation < 0.68) {
+            if (temperature < 0.44) { // Desert
+                current.set_image_id(24);
+            } else if (temperature < 0.49) { // Savane
+                current.set_image_id(14);
+            } else if (temperature < 0.7) { // Normale
+                current.set_image_id(0);
             }
         }
-        // Neige
-        else if (e < 0.805) {
-            current.setImageId(16);
-        }
-        // Montagne
-        else {
-            current.setImageId(5);
-        }
+        else if (elevation < 0.805) current.set_image_id(16); // Neige
+        else current.set_image_id(5); // Montagne
 
-        this.river.push(current);//Ajout de la tuile à la liste de rivière
+        current.humidity = 200; // for road path finding
+        this.river_path.push(current);// Ajout de la tuile à la liste de rivières
         if (!current.isNotSeaOrLittoral()) {
-            return tuiles; // break condition
+            return; // break condition
         }
-        //if (tuiles.length !== 1) current.setImageId(42);
-        let voisins = current.getVoisins(),
+        let neighbors = current.get_neighbors(),
             min = 1,
             lower = current;
-        for (let i = 0; i < voisins.length; i++) {
-            let elev = voisins[i].getElevation();
-            if (tuiles.indexOf(voisins[i]) === -1 && elev <= min) {
+        // search neighbor with the lower elevation
+        for (let i = 0; i < neighbors.length; i++) {
+            let elev = neighbors[i].get_elevation();
+            if (river_tiles.indexOf(neighbors[i]) === -1 && elev <= min) {
                 min = elev;
-                lower = voisins[i];
+                lower = neighbors[i];
             }
         }
-        tuiles.push(lower)
-        return this.next_river(tuiles);
+        river_tiles.push(lower)
+        return this.river_pathfinding(river_tiles);
     }
 
-    set_river() {
-        for (let i = 0; i < this.river.length; i++) {
-            let current = this.river[i],
-                index_of_previous_voisins = i !== 0 ? current.getVoisins().indexOf(this.river[i - 1]) : false;
-            if (i === 0 || index_of_previous_voisins === -1) {//SI pas de précédent
-                this.setRiverImage(-1, current, current.getVoisins().indexOf(this.river[i + 1]));
-            } else if (i === this.river.length || current.getVoisins().indexOf(this.river[i + 1]) === -1) { // Si pas de suivant
-                this.setRiverImage(current.getVoisins().indexOf(this.river[i - 1]), current, -1);
-            } else {// Cas global
-                this.setRiverImage(current.getVoisins().indexOf(this.river[i - 1]), current, current.getVoisins().indexOf(this.river[i + 1]));
+    draw_river() {
+        for (let i = 0; i < this.river_path.length; i++) {
+            let current = this.river_path[i],
+                index_of_previous_neighbors = i !== 0 ? current.get_neighbors().indexOf(this.river_path[i - 1]) : false;
+            if (i === 0 || index_of_previous_neighbors === -1) { // Si pas de précédent
+                this.draw_river_or_town_path(-1, current, current.get_neighbors().indexOf(this.river_path[i + 1]));
+            } else if (i === this.river_path.length || current.get_neighbors().indexOf(this.river_path[i + 1]) === -1) { // Si pas de suivant
+                let previous = current.get_neighbors().indexOf(this.river_path[i - 1]);
+                this.draw_river_or_town_path(previous, current, -1);
+            } else { // Cas global
+                let previous = current.get_neighbors().indexOf(this.river_path[i - 1]),
+                    next = current.get_neighbors().indexOf(this.river_path[i + 1]);
+                this.draw_river_or_town_path(previous, current, next);
             }
         }
     }
 
 
-    setRiverImage(previous, current, next, is_road) {
-        if(is_road) console.log(previous, next);
-        let deplacement = current.getY() % 2 === 0 ? current.getX() * 48 + 24 : current.getX() * 48,
+    draw_river_or_town_path(previous, current, next, is_road) {
+        let deplacement = current.get_y() % 2 === 0 ? current.get_x() * 48 + 24 : current.get_x() * 48,
             id, angle = 0;
-        if (previous === -1) { // depart
-            switch (next) {
-                case 0:
-                    id = 17;
-                    angle = 300;
-                    break;
-                case 1:
-                    id = 17;
-                    break;
-                case 2:
-                    id = 18;
-                    break;
-                case 3:
-                    id = 17;
-                    angle = 300;
-                    break;
-                case 4:
-                    id = 17;
-                    break;
-                default:
-                    id = 18;
-                    break;
-            }
-        } else if (next === -1) { // arrivée
-            return;
-        } else {
-            if (previous === 0) {
-                if (next === 1) {
-                    id = 19;
-                    angle = 120;
-                } else if (next === 2) {
-                    id = 22;
-                    angle = 60;
-                } else if (next === 3) {
-                    id = 17;
-                    angle = 300;
-                } else if (next === 4) {
-                    id = 21;
-                    angle = 120;
-                } else {
-                    id = 19;
-                    angle = 60;
-                }
-            } else if (previous === 1) {
-                if (next === 0) {
-                    id = 19;
-                    angle = 120;
-                } else if (next === 2) {
-                    id = 19;
-                    angle = 180;
-                } else if (next === 3) {
-                    id = 21;
-                    angle = 300;
-                } else if (next === 4) {
-                    id = 17;
-                    angle = 0;
-                } else {
-                    id = 22;
-                }
-            } else if (previous === 2) {
-                if (next === 0) {
-                    id = 21;
-                    angle = 240;
-                } else if (next === 1) {
-                    id = 20;
-                    angle = 0;
-                } else if (next === 3) {
-                    id = 19;
-                    angle = 240;
-                } else if (next === 4) {
-                    id = 21;
-                    angle = 0;
-                } else {
-                    id = 18;
-                    angle = 0;
-                }
-            } else if (previous === 3) {
-                if (next === 0) {
-                    id = 17;
-                    angle = 300;
-                } else if (next === 1) {
-                    id = 21;
-                    angle = 300;
-                } else if (next === 2) {
-                    id = 19;
-                    angle = 240;
-                } else if (next === 4) {
-                    id = 19;
-                    angle = 300;
-                } else {
-                    id = 21;
-                    angle = 60;
-                }
-            } else if (previous === 4) {
-                if (next === 0) {
-                    id = 22;
-                    angle = -60;
-                } else if (next === 1) {
-                    id = 17;
-                } else if (next === 2) {
-                    id = 21;
-                } else if (next === 3) {
-                    id = 19;
-                    angle = 300;
-                } else {
-                    id = 19;
-                }
+        if (next === -1) return; // arrivée
+        if (previous === -1) { // start
+            id = 17; // pour next in [0, 1, 3, 4]
+            if(next === 0 || next === 3) angle = 300;
+            else if(next === 2 || next === 5) id = 18;
+        }
+        else if (previous === 0) {
+            id = 19; // pour next in [1, 5]
+            if (next === 1) {
+                angle = 120;
+            } else if (next === 2) {
+                id = 22;
+                angle = 60;
+            } else if (next === 3) {
+                id = 17;
+                angle = 300;
+            } else if (next === 4) {
+                id = 21;
+                angle = 120;
             } else {
-                if (next === 0) {
-                    id = 19;
-                    angle = 60;
-                } else if (next === 1) {
-                    id = 22;
-                } else if (next === 2) {
-                    id = 18;
-                } else if (next === 3) {
-                    id = 21;
-                    angle = 60;
-                } else {
-                    id = 19;
-                }
+                angle = 60;
+            }
+        } else if (previous === 1) {
+            id = 19; // pour next in [0, 2]
+            if (next === 0) {
+                angle = 120;
+            } else if (next === 2) {
+                angle = 180;
+            } else if (next === 3) {
+                id = 21;
+                angle = 300;
+            } else if (next === 4) {
+                id = 17;
+            } else{
+                id = 22;
+            }
+        } else if (previous === 2) {
+            id = 21; // pour next in [0, 4]
+            if (next === 0) {
+                angle = 240;
+            } else if (next === 1) {
+                id = 20;
+            } else if (next === 3) {
+                id = 19;
+                angle = 240;
+            } else if (next === 5) {
+                id = 18;
+            }
+        } else if (previous === 3) {
+            id = 19; // pour next in [2, 4]
+            if (next === 0) {
+                id = 17;
+                angle = 300;
+            } else if (next === 1) {
+                id = 21;
+                angle = 300;
+            } else if (next === 2) {
+                angle = 240;
+            } else if (next === 4) {
+                angle = 300;
+            } else {
+                id = 21;
+                angle = 60;
+            }
+        } else if (previous === 4) {
+            id = 19; // pour next in [3, 5]
+            if (next === 0) {
+                id = 22;
+                angle = -60;
+            } else if (next === 1) {
+                id = 17;
+            } else if (next === 2) {
+                id = 21;
+            } else if (next === 3) {
+                angle = 300;
+            }
+        } else {
+            id = 19; // pour next in [1, 5]
+            if (next === 0) {
+                angle = 60;
+            } else if (next === 1) {
+                id = 22;
+            } else if (next === 2) {
+                id = 18;
+            } else if (next === 3) {
+                id = 21;
+                angle = 60;
             }
         }
-        if(is_road) id -= 16;
-        this.draw_river(deplacement, current.getY(), this.HEXTILES_RIVER, this.get_img_X(id), this.get_img_Y(id), angle);
+        if (is_road) id -= 16;
+        this.draw_path(deplacement, current.get_y(), this.HEXTILES_PATH, this.get_img_x(id), this.get_img_y(id), angle);
     }
 
-    drawNameTown() {
+    draw_town_name() {
         for (let i = 0; i < this.town.length; i++) {
-            let deplacement = this.town[i].getY() % 2 === 0 ? this.town[i].getX() * 48 + 24 : this.town[i].getX() * 48,
-                tuile = this.town[i];
-            let numero_ville = Math.floor(Math.random() * (this.town_names.length));
-            this.bind_draw_t(deplacement, tuile.getY(), this.town_names[numero_ville]);
-            this.town_names.splice(numero_ville, 1);
+            let deplacement = this.town[i].get_y() % 2 === 0 ? this.town[i].get_x() * 48 + 24 : this.town[i].get_x() * 48,
+                tile = this.town[i];
+            let random_int = Math.floor(Math.random() * (this.town_names.length));
+            this.draw_text(deplacement, tile.get_y(), this.town_names[random_int]);
+            this.town_names.splice(random_int, 1);
         }
     }
 
-    setTownPath() {
+    set_town_path() {
         for (let i = 0; i < this.town.length; i++) {
-            let depart = this.town[i], arrive = this.town[i+1];
-            if (!arrive){ // fin de boucle arrive n'existe pas
-                depart = this.town[this.town.length - 1];
-                arrive = this.town[0];
-                this.a_star_algo(depart, arrive);
-                this.town_path.push(depart);
+            let start = this.town[i], end = this.town[i + 1];
+            if (!end) { // fin de boucle end n'existe pas, on relie la derniere ville et la premiere
+                start = this.town[this.town.length - 1];
+                end = this.town[0];
+                this.town_pathfinding(start, end);
+                this.town_path.push(start);
                 return;
-            }
-            else{
-                this.a_star_algo(depart, arrive);
-                this.town_path.push(depart);
+            } else {
+                this.town_pathfinding(start, end);
+                this.town_path.push(start);
             }
         }
     }
 
-    a_star_algo(depart, arrive){
-        /*frontier = PriorityQueue()
-        frontier.put(start, 0)
-        came_from = dict()
-        cost_so_far = dict()
-        came_from[start] = None
-        cost_so_far[start] = 0
-
-        while not frontier.empty():
-           current = frontier.get()
-
-           if current == goal:
-              break
-
-           for next in graph.neighbors(current):
-              new_cost = cost_so_far[current] + graph.cost(current, next)
-              if next not in cost_so_far or new_cost < cost_so_far[next]:
-                 cost_so_far[next] = new_cost
-                 priority = new_cost + heuristic(goal, next)
-                 frontier.put(next, priority)
-                 came_from[next] = current*/
-        let frontier = new PriorityQueue(),
+    town_pathfinding(start, end) {
+        let queue = new PriorityQueue(),
             came_from = {},
             cost_so_far = {};
-        frontier.enqueue(depart, 0);
-        came_from[depart.to_string()] = null;
-        cost_so_far[depart.to_string()] = 0;
+        queue.enqueue(start, 0);
+        came_from[start.to_string()] = null;
+        cost_so_far[start.to_string()] = 0;
 
-        while(!frontier.isEmpty()){
-            let current = frontier.dequeue().element;
-            if(current.to_string() === arrive.to_string()){
-                while(current !== depart){
-                    let deplacement = current.getY() % 2 === 0 ? current.getX() * 48 + 24 : current.getX() * 48;
-                    this.bind_draw_tuile(deplacement, current.getY(), this.get_hextiles_images(), this.get_img_X(34), this.get_img_Y(34));
+        while (!queue.isEmpty()) {
+            let current = queue.dequeue().element;
+            if (current.to_string() === end.to_string()) {
+                while (current !== start) {
+                    this.town_path.push(current);
                     current = came_from[current.to_string()];
                 }
                 return;
             }
-            let voisins = current.getVoisins();
-            for(let i=0; i<voisins.length; i++){
-                let next = voisins[i],
-                    new_cost = cost_so_far[current.to_string()] + this.getCost(next.getImageId());
-                if ((cost_so_far[next.to_string()] === undefined || new_cost < cost_so_far[next.to_string()]) && next.isNotSeaOrLittoral()){
+            let neighbors = current.get_neighbors();
+            for (let i = 0; i < neighbors.length; i++) {
+                let next = neighbors[i],
+                    new_cost = cost_so_far[current.to_string()] + this.get_cost(next);
+                if ((cost_so_far[next.to_string()] === undefined || new_cost < cost_so_far[next.to_string()]) &&
+                    next.isNotSeaOrLittoral()) {
                     cost_so_far[next.to_string()] = new_cost;
-                    let priority = new_cost + this.heuristic(arrive, next);
-                    frontier.enqueue(next, priority);
+                    let priority = new_cost + this.heuristic(end, next);
+                    queue.enqueue(next, priority);
                     came_from[next.to_string()] = current;
                 }
             }
         }
     }
 
-    heuristic(a, b){
+    heuristic(a, b) {
         // Manhattan distance on a square grid
-        return Math.abs(a.getX() - b.getX()) + Math.abs(a.getY() - b.getY());
+        return Math.abs(a.get_x() - b.get_x()) + Math.abs(a.get_y() - b.get_y());
     }
 
-    nextPath(depart, arrive, pathes) {
-        let voisins = depart.getVoisins(),
-            current = depart,
-            x_dep = depart.getX(), y_dep = depart.getY(),
-            x_arr = arrive.getX(), y_arr = arrive.getY(),
-            cost = 30;
-        for (let i = 0; i < voisins.length; i++) {
-            let x_curr = voisins[i].getX(), y_curr = voisins[i].getY(),
-                d_x = Math.abs((x_arr - x_dep)) - Math.abs((x_arr - x_curr)),
-                d_y = Math.abs((y_arr - y_dep)) - Math.abs((y_arr - y_curr)),
-                cost_current = this.getCost(voisins[i].getImageId()) - d_x - d_y;
-            if(arrive === voisins[i]){
-                current = voisins[i];
-                this.town_path.push(current);
-                return;
-            }
-            else if(cost_current <= cost && voisins[i].isNotSeaOrLittoral() && pathes.indexOf(voisins[i]) === -1){
-                current = voisins[i];
-                cost = cost_current;
-            }
+    get_cost(tile) {
+        let id = tile.get_image_id(),
+            h = tile.get_humidity();
+        if (id === 0 || id === 16 || id === 24 || id === 14) {
+            if (h === 200) return 5; // if we are on a river
+            return 1;
         }
-        this.town_path.push(current);
-        if (current !== arrive && current !== depart) {
-            pathes.push(current);
-            //let deplacement = current.getY() % 2 === 0 ? current.getX() * 48 + 24 : current.getX() * 48;
-            //this.bind_draw_tuile(deplacement, current.getY(), this.get_hextiles_images(), this.get_img_X(33), this.get_img_Y(33));
-            this.nextPath(current, arrive, pathes);
-        }
+        else if (id === 1 || id === 13 || id === 26 || id === 17) return 2;
+        else if (id === 2 || id === 12 || id === 18) return 3;
+        else if (id === 3 || id === 4 || id === 19 || id === 20 || id === 25) return 4;
+        else return 100;
     }
-    getCost(id) {
-      if (id === 0 || id === 16 || id === 24 || id === 14) {
-           return 1;
-      } else if (id === 1 || id === 13 || id === 26 || id === 17) {
-           return 2;
-      } else if (id === 2 || id === 12 || id === 18) {
-           return 3;
-      } else if (id === 3 || id === 4 || id === 19 || id === 20 || id === 25) {
-           return 4;
-      } else {
-           return 100;
-      }
-  }
 
-    set_path(){
+    draw_town_path() {
         for (let i = 0; i < this.town_path.length; i++) {
             let current = this.town_path[i];
-            if (this.town.indexOf(current) !== -1){
+            if (this.town.indexOf(current) !== -1) {
                 continue;
-            }else if (i === this.town_path.length || current.getVoisins().indexOf(this.town_path[i + 1]) === -1) { // Si pas de suivant
-                let previous = current.getVoisins().indexOf(this.town_path[i - 1]);
-                this.setRiverImage(previous, current, -1, true);
+            } else if (i === this.town_path.length || current.get_neighbors().indexOf(this.town_path[i + 1]) === -1) { // Si pas de suivant
+                let previous = current.get_neighbors().indexOf(this.town_path[i - 1]);
+                this.draw_river_or_town_path(previous, current, -1, true);
             } else {// Cas global
-                let previous = current.getVoisins().indexOf(this.town_path[i - 1]),
-                    next = current.getVoisins().indexOf(this.town_path[i + 1]);
-                this.setRiverImage(previous, current, next, true);
+                let previous = current.get_neighbors().indexOf(this.town_path[i - 1]),
+                    next = current.get_neighbors().indexOf(this.town_path[i + 1]);
+                this.draw_river_or_town_path(previous, current, next, true);
             }
         }
     }
 
 
-
-    draw = (x, y) => {
+    draw_grid = (x, y) => {
         let deplacement = y % 2 === 0 ? x * 48 + 24 : x * 48,
-            tuile = this.tuile_tab[y][x];
-
-        this.bind_draw_tuile(deplacement, y, this.get_hextiles_images(), this.get_img_X(tuile.getImageId()), this.get_img_Y(tuile.getImageId()));
+            tile = this.grid[y][x];
+        this.draw_tile(deplacement, y, this.get_hextiles_images(), this.get_img_x(tile.get_image_id()), this.get_img_y(tile.get_image_id()));
     }
 }

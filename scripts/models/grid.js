@@ -537,7 +537,7 @@ class Grid {
             let x_curr = voisins[i].getX(), y_curr = voisins[i].getY(),
                 d_x = Math.abs((x_arr - x_dep)) - Math.abs((x_arr - x_curr)),
                 d_y = Math.abs((y_arr - y_dep)) - Math.abs((y_arr - y_curr)),
-                cost_current = - d_x - d_y;
+                cost_current = this.getCost(voisins[i].getImageId()) - d_x - d_y;
             if(arrive === voisins[i]){
                 current = voisins[i];
                 this.town_path.push(current);

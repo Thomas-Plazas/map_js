@@ -45,15 +45,15 @@ class View {
     }
 
     draw_text(x, y, text) {
-        this.ctx.font = '20px BreatheFire';
-        //this.ctx.fillStyle = "red";
-        this.ctx.textAlign = "center";
-        this.ctx.fillStyle = "black";
-        this.ctx.fillText(text, x + 18, y * 14 + 60);
 
+        this.ctx.font = '20px BreatheFire';
         this.ctx.strokeStyle = "black";
-        this.ctx.lineWidth = 0.2;
+        this.ctx.textAlign = "center";
+        this.ctx.lineWidth = 4;
         this.ctx.strokeText(text, x + 18, y * 14 + 60);
+        //this.ctx.fillStyle = "red";
+        this.ctx.fillStyle = "white";
+        this.ctx.fillText(text, x + 18, y * 14 + 60);
     }
 
     refresh() {

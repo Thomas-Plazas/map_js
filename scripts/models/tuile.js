@@ -19,6 +19,9 @@ class Tuile {
         return this.y;
     }
 
+    to_string(){
+        return "x" + this.getX() + "y" + this.getY();
+    }
     setX(x) {
         this.x = x;
     }

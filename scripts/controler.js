@@ -1,39 +1,18 @@
 class Controller {
+    // Constructeur
     constructor(grid, view) {
         this.grid = grid;
         this.view = view;
     }
 
+    // Initialisation
     init() {
-        var view = this.view,
-            grid = this.grid,
-            ctrl = this;
-        this.view.get_map_L().addEventListener('change', function () {
-            var h = parseInt(view.get_map_H().value),
-                l = parseInt(view.get_map_L().value);
-            grid.set_map_H(h);
-            grid.set_map_L(l);
-            grid.generate();
-        });
-
-        this.view.get_map_H().addEventListener('change', function () {
-            var h = parseInt(view.get_map_H().value),
-                l = parseInt(view.get_map_L().value);
-            grid.set_map_H(h);
-            grid.set_map_L(l);
-            grid.generate();
-        });
-
-        this.view.set_map_H(this.grid.get_map_H());
-        this.view.set_map_L(this.grid.get_map_L());
-        this.grid.bind_draw(this.draw_tuile);
-        this.grid.bind_refresh(this.refresh_canvas);
+        // Binding des fonctions de la vue pour les utiliser dans le model
+        this.grid.bind_draw_tile(this.draw_tile);
         this.grid.bind_draw_text(this.draw_text);
-        this.grid.bind_draw_river(this.draw_river);
-        //noise.seed(Math.random());
-        //noise2.seed(Math.random());
+        this.grid.bind_draw_path(this.draw_path);
 
-
+        // Affichage de la carte
         Promise.all([
             new Promise((resolve) => {
                 this.grid.get_hextiles_images().addEventListener('load', () => {
@@ -46,22 +25,21 @@ class Controller {
         });
     }
 
-    draw_tuile = (deplacement, y, hextiles, id_x, id_y) => {
-        this.view.draw_tuile(deplacement, y, hextiles, id_x, id_y);
+    // Fonctions de dessins de la carte
+    draw_tile = (deplacement, y, hextiles, id_x, id_y) => {
+        this.view.draw_tile(deplacement, y, hextiles, id_x, id_y);
     }
 
-    refresh_canvas = () => {
-        this.view.refresh();
+    draw_text = (x, y, text) => {
+        this.view.draw_text(x, y, text);
     }
-    draw_text = (x,y,text) => {
-        this.view.draw_text(x,y,text);
-    }
-    draw_river = (x, y, hextiles, img_x, img_y, angle) => {
-        this.view.draw_river(x, y, hextiles, img_x, img_y, angle);
+
+    draw_path = (x, y, hextiles, img_x, img_y, angle) => {
+        this.view.draw_path(x, y, hextiles, img_x, img_y, angle);
     }
 }
 
-
+// Initialisation du controller
 $(document).ready(function () {
     const app = new Controller(new Grid(), new View());
     app.init();

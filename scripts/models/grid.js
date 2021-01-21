@@ -107,7 +107,7 @@ class Grid {
         this.set_river();
         if(this.town.length > 1){
             this.setTownPath();
-            this.set_path();
+            //this.set_path();
         }
         this.drawNameTown();
 
@@ -516,15 +516,72 @@ class Grid {
             if (!arrive){ // fin de boucle arrive n'existe pas
                 depart = this.town[this.town.length - 1];
                 arrive = this.town[0];
-                this.nextPath(depart, arrive, [depart, arrive]);
+                this.a_star_algo(depart, arrive);
                 this.town_path.push(depart);
                 return;
             }
             else{
-                this.nextPath(depart, arrive, [depart, arrive]);
+                this.a_star_algo(depart, arrive);
                 this.town_path.push(depart);
             }
         }
+    }
+
+    a_star_algo(depart, arrive){
+        /*frontier = PriorityQueue()
+        frontier.put(start, 0)
+        came_from = dict()
+        cost_so_far = dict()
+        came_from[start] = None
+        cost_so_far[start] = 0
+
+        while not frontier.empty():
+           current = frontier.get()
+
+           if current == goal:
+              break
+
+           for next in graph.neighbors(current):
+              new_cost = cost_so_far[current] + graph.cost(current, next)
+              if next not in cost_so_far or new_cost < cost_so_far[next]:
+                 cost_so_far[next] = new_cost
+                 priority = new_cost + heuristic(goal, next)
+                 frontier.put(next, priority)
+                 came_from[next] = current*/
+        let frontier = new PriorityQueue(),
+            came_from = {},
+            cost_so_far = {};
+        frontier.enqueue(depart, 0);
+        came_from[depart.to_string()] = null;
+        cost_so_far[depart.to_string()] = 0;
+
+        while(!frontier.isEmpty()){
+            let current = frontier.dequeue().element;
+            if(current.to_string() === arrive.to_string()){
+                while(current !== depart){
+                    let deplacement = current.getY() % 2 === 0 ? current.getX() * 48 + 24 : current.getX() * 48;
+                    this.bind_draw_tuile(deplacement, current.getY(), this.get_hextiles_images(), this.get_img_X(34), this.get_img_Y(34));
+                    current = came_from[current.to_string()];
+                }
+                return;
+            }
+            let voisins = current.getVoisins();
+            for(let i=0; i<voisins.length; i++){
+                let next = voisins[i],
+                    new_cost = cost_so_far[current.to_string()] + this.getCost(next.getImageId());
+                if ((cost_so_far[next.to_string()] === undefined || new_cost < cost_so_far[next.to_string()]) && next.isNotSeaOrLittoral()){
+                    cost_so_far[next.to_string()] = new_cost;
+                    let priority = new_cost + this.heuristic(arrive, next);
+                    frontier.enqueue(next, priority);
+                    came_from[next.to_string()] = current;
+                }
+            }
+        }
+    }
+
+    heuristic(a, b){
+        // Manhattan distance on a square grid
+        return Math.abs(a.getX() - b.getX()) + Math.abs(a.getY() - b.getY());
     }
 
     nextPath(depart, arrive, pathes) {
@@ -558,13 +615,13 @@ class Grid {
     }
     getCost(id) {
       if (id === 0 || id === 16 || id === 24 || id === 14) {
-           return 0;
+           return 1;
       } else if (id === 1 || id === 13 || id === 26 || id === 17) {
            return 2;
       } else if (id === 2 || id === 12 || id === 18) {
-           return 5;
+           return 3;
       } else if (id === 3 || id === 4 || id === 19 || id === 20 || id === 25) {
-           return 8;
+           return 4;
       } else {
            return 100;
       }

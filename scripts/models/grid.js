@@ -537,7 +537,7 @@ class Grid {
             let x_curr = voisins[i].getX(), y_curr = voisins[i].getY(),
                 d_x = Math.abs((x_arr - x_dep)) - Math.abs((x_arr - x_curr)),
                 d_y = Math.abs((y_arr - y_dep)) - Math.abs((y_arr - y_curr)),
-                cost_current = this.getCost(voisins[i].getImageId()) - 3*d_x - 3*d_y;
+                cost_current = - d_x - d_y;
             if(arrive === voisins[i]){
                 current = voisins[i];
                 this.town_path.push(current);
@@ -556,6 +556,19 @@ class Grid {
             this.nextPath(current, arrive, pathes);
         }
     }
+    getCost(id) {
+      if (id === 0 || id === 16 || id === 24 || id === 14) {
+           return 0;
+      } else if (id === 1 || id === 13 || id === 26 || id === 17) {
+           return 2;
+      } else if (id === 2 || id === 12 || id === 18) {
+           return 5;
+      } else if (id === 3 || id === 4 || id === 19 || id === 20 || id === 25) {
+           return 8;
+      } else {
+           return 100;
+      }
+  }
 
     set_path(){
         for (let i = 0; i < this.town_path.length; i++) {
@@ -573,19 +586,7 @@ class Grid {
         }
     }
 
-    getCost(id) {
-        if (id === 0 || id === 16 || id === 24 || id === 14) {
-            return 2;
-        } else if (id === 1 || id === 13 || id === 26 || id === 17) {
-            return 6;
-        } else if (id === 2 || id === 12 || id === 18) {
-            return 9;
-        } else if (id === 3 || id === 4 || id === 19 || id === 20 || id === 25) {
-            return 12;
-        } else {
-            return 100;
-        }
-    }
+
 
     draw = (x, y) => {
         let deplacement = y % 2 === 0 ? x * 48 + 24 : x * 48,

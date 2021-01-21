@@ -8,24 +8,7 @@ class Controller {
         var view = this.view,
             grid = this.grid,
             ctrl = this;
-        this.view.get_map_L().addEventListener('change', function () {
-            var h = parseInt(view.get_map_H().value),
-                l = parseInt(view.get_map_L().value);
-            grid.set_map_H(h);
-            grid.set_map_L(l);
-            grid.generate();
-        });
 
-        this.view.get_map_H().addEventListener('change', function () {
-            var h = parseInt(view.get_map_H().value),
-                l = parseInt(view.get_map_L().value);
-            grid.set_map_H(h);
-            grid.set_map_L(l);
-            grid.generate();
-        });
-
-        this.view.set_map_H(this.grid.get_map_H());
-        this.view.set_map_L(this.grid.get_map_L());
         this.grid.bind_draw(this.draw_tuile);
         this.grid.bind_refresh(this.refresh_canvas);
         this.grid.bind_draw_text(this.draw_text);

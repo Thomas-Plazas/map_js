@@ -39,14 +39,6 @@ class Grid {
         return this.HEXTILES_IMAGE;
     }
 
-    set_map_H(h) {
-        this.map_H = h;
-    }
-
-    set_map_L(l) {
-        this.map_L = l;
-    }
-
     bind_draw(callback) {
         this.bind_draw_tuile = callback;
     }

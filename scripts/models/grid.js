@@ -1,6 +1,6 @@
 class Grid {
 
-   // Constructeur
+    // Constructeur
     constructor() {
         this.map_height = 62;
         this.map_width = 18;
@@ -35,7 +35,7 @@ class Grid {
         return this.map_width;
     }
 
-    // Position de l'image
+    // Position de l'image dans le fichier img/fantasyhextiles_v3_borderless.png
     get_img_x(id) {
         return id % 8;
     }
@@ -62,11 +62,11 @@ class Grid {
         let height = this.get_map_height(),
             width = this.get_map_width();
 
-         // Parcours de la carte
+        // Parcours de la carte
         for (let y = 0; y < height; y++) {
             this.grid[y] = [];
             for (let x = 0; x < width; x++) {
-               // Génération des paramètres de la carte
+                // Génération des paramètres de chaque tuile
                 let nx = x / width - 0.5, ny = y / height - 0.5,
                     t = new Tile(x, y);
                 this.grid[y][x] = t;
@@ -91,7 +91,7 @@ class Grid {
         this.smooth_neighbors(2); // humidity
         for (let i = 0; i < 4; i++) this.smooth_neighbors(3); // temperature
 
-        // Ajout du littoral, des rivières, des villes et des routes
+        // Ajout du littoral, des rivières, des villes, des routes et des assets
         this.super_for(this.littoral)
         this.super_for(this.add_rivers, 0.07);
         this.super_for(this.add_towns, 0.005);
@@ -102,13 +102,13 @@ class Grid {
             this.draw_town_path();
         }
         this.draw_town_name();
-        this.super_for(this.add_asset, 0.05, 33, 0); // flowers PLAINE
-        this.super_for(this.add_asset, 0.1, 34, 16); // flowers NEIGE
-        this.super_for(this.add_asset, 0.1, 35, 24); // flowers SAVANE
+        this.super_for(this.add_asset, 0.05, 33, 0); // flowers Plaine
+        this.super_for(this.add_asset, 0.1, 34, 16); // flowers Neige
+        this.super_for(this.add_asset, 0.1, 35, 24); // flowers Savane
 
     }
 
-    // Facteur des doubles pour éviter la duplication des lignes de codes
+    // Factorisation de la double boucle for pour éviter la duplication de codes
     super_for(callback, frequency, id_asset, id_tile) {
         let height = this.get_map_height(),
             width = this.get_map_width();
@@ -119,19 +119,19 @@ class Grid {
         }
     }
 
-    // Recherche des voisins de la tuile courante
+    // Recherche des voisins pour une tuile en fonction de sa position sur la carte
     find_neighbors = (x, y, height, width) => {
         let tile = this.grid[y][x],
             neighbors = [];
-         // Tuiles les plus en haut de la carte (x,0)
+        // Tuiles sur le bord haut de la carte (x,0)
         if (y === 0) {
-            // Tuile dans le coin haut gauche (0,0)
+            // Tuiles dans le coin haut gauche (0,0)
             if (x === 0) {
                 neighbors.push(this.grid[y + 1][x]);
                 neighbors.push(this.grid[y + 2][x]);
                 neighbors.push(this.grid[y + 1][x + 1]);
             }
-            // Tuile dans le coin haut droit (max,0)
+            // Tuiles dans le coin haut droit (max,0)
             else if (x === width - 1) {
                 neighbors.push(this.grid[y + 1][x]);
                 neighbors.push(this.grid[y + 2][x]);
@@ -143,13 +143,13 @@ class Grid {
                 neighbors.push(this.grid[y + 2][x]);
             }
         }
-       //Tuiles les plus en bas de la carte (x,max)
+        // Tuiles sur le bord bas de la carte (x,max)
         else if (y === height - 1) {
-           // Tuile dans le coin bas gauche (0,max)
+            // Tuiles dans le coin bas gauche (0,max)
             if (x === 0) {
                 neighbors.push(this.grid[y - 2][x]);
                 neighbors.push(this.grid[y - 1][x]);
-            // Tuile dans le coin bas droit (max,max)
+                // Tuiles dans le coin bas droit (max,max)
             } else if (x === width - 1) {
                 neighbors.push(this.grid[y - 2][x]);
                 neighbors.push(this.grid[y - 1][x - 1]);
@@ -164,7 +164,7 @@ class Grid {
         }
         // Tuiles lambda (x,y)
         else {
-           // Tuile en bord gauche de la carte (0,y)
+            // Tuiles sur le  bord gauche de la carte (0,y)
             if (x === 0) {
                 neighbors.push(this.grid[y - 1][x]);
                 neighbors.push(this.grid[y + 1][x]);
@@ -174,7 +174,7 @@ class Grid {
                     neighbors.push(this.grid[y + 1][x + 1]);
                     neighbors.push(this.grid[y - 1][x + 1]);
                 }
-            // Tuile en bord droit de la carte (max,y)
+                // Tuile en bord droit de la carte (max,y)
             } else if (x === width - 1) {
                 neighbors.push(this.grid[y - 1][x]);
                 neighbors.push(this.grid[y + 1][x]);
@@ -184,9 +184,9 @@ class Grid {
                     neighbors.push(this.grid[y + 1][x - 1]);
                     neighbors.push(this.grid[y - 1][x - 1]);
                 }
-            // Tuile en bord droit de la carte (max,y)
+                // Tuiles en bord droit de la carte (max,y)
             } else {
-               // Tuile sur une ligne paire (x,y pair)
+                // Tuiles sur une ligne paire (x,y pair)
                 if (y % 2 === 0) {
                     if (y - 2 > 0) neighbors.push(this.grid[y - 2][x]);
                     neighbors.push(this.grid[y - 1][x + 1]);
@@ -194,7 +194,7 @@ class Grid {
                     if (y + 2 < height) neighbors.push(this.grid[y + 2][x]);
                     neighbors.push(this.grid[y + 1][x]);
                     neighbors.push(this.grid[y - 1][x]);
-               // Tuile sur une ligne impaire (x,y impair)
+                    // Tuiles sur une ligne impaire (x,y impair)
                 } else {
                     if (y - 2 > 0) neighbors.push(this.grid[y - 2][x]);
                     neighbors.push(this.grid[y - 1][x]);
@@ -216,7 +216,7 @@ class Grid {
         for (let y = 0; y < height; y++) {
             tabs[y] = [];
             for (let x = 0; x < width; x++) {
-               // Calcul de la moyenne des paramètres des voisins de la tuile courante
+                // Calcul de la moyenne des paramètres des voisins de la tuile courante
                 let tile = this.grid[y][x],
                     neighbors = tile.get_neighbors(),
                     e_moy = 0,
@@ -261,7 +261,7 @@ class Grid {
         this.grid[y][x].littoral();
     }
 
-    // Ajout des fleurs
+    // Ajout d'assets
     add_asset = (x, y, height, width, frequency, id_asset, id_tile) => {
         let deplacement = y % 2 === 0 ? x * 48 + 24 : x * 48,
             tile = this.grid[y][x];
@@ -285,10 +285,10 @@ class Grid {
         if (frequency > Math.random() && tile.get_image_id() !== 7 && tile.get_neighbors().length === 6) {
             if (tile.get_image_id() === 6) {// ville cotière : LITORAL
                 let neighbors = tile.get_neighbors();
-                if (neighbors[4].isNotSeaOrLittoral() || neighbors[5].isNotSeaOrLittoral()) { // Ville cotière placée sur le côté gauche
+                if (neighbors[4].isNotSeaOrLittoral() || neighbors[5].isNotSeaOrLittoral()) { // Port cotière orienté à gauche
                     tile.set_image_id(36);
                     this.town.push(tile);
-                } else if (neighbors[2].isNotSeaOrLittoral() || neighbors[1].isNotSeaOrLittoral()) { // Ville cotière placée sur le côté droit
+                } else if (neighbors[2].isNotSeaOrLittoral() || neighbors[1].isNotSeaOrLittoral()) { // Port orienté à droit
                     tile.set_image_id(37);
                     this.town.push(tile);
                 }
@@ -319,13 +319,13 @@ class Grid {
         }
     }
 
-    // Recher du chemin de la rivière
+    // Recherche du chemin de la rivière
     river_pathfinding(river_tiles) {
         let current = river_tiles[river_tiles.length - 1],
             elevation = current.get_elevation(),
             temperature = current.get_temperature();
 
-        // Arrivée à la mer
+
         if (elevation < 0.24) {
         }
         // Continent hors montagne
@@ -337,14 +337,13 @@ class Grid {
             } else if (temperature < 0.7) { // biome PLAINE
                 current.set_image_id(0);
             }
-        }
-        else if (elevation < 0.805) current.set_image_id(16); // biome NEIGE
+        } else if (elevation < 0.805) current.set_image_id(16); // biome NEIGE
         else current.set_image_id(5); // montagne enneigée
 
         current.humidity = 200; // Pour éviter qu'une route suive le cours d'une rivière
         this.river_path.push(current);// Ajout de la tuile à la liste de rivières
         if (!current.isNotSeaOrLittoral()) {
-            return; // break condition
+            return; // break condition : arrivé sur la mer
         }
         let neighbors = current.get_neighbors(),
             min = 1,
@@ -361,7 +360,7 @@ class Grid {
         return this.river_pathfinding(river_tiles);
     }
 
-    // Dessin d'une rivière
+    // Dessin des rivières
     draw_river() {
         for (let i = 0; i < this.river_path.length; i++) {
             let current = this.river_path[i],
@@ -382,14 +381,13 @@ class Grid {
     draw_river_or_town_path(previous, current, next, is_road) {
         let deplacement = current.get_y() % 2 === 0 ? current.get_x() * 48 + 24 : current.get_x() * 48,
             id, angle = 0;
-        if (next === -1) return; // Fin du dessin de la rivière
+        if (next === -1) return; // Fin du dessin de la rivière ou des routes
         if (previous === -1) { // Début du dessin de la rivière
-            id = 17; // avec un prochain étant un voisin in [0, 1, 3, 4]
-            if(next === 0 || next === 3) angle = 300;
-            else if(next === 2 || next === 5) id = 18;
-        }
-        else if (previous === 0) {
-            id = 19; // avec un prochain étant un voisin in [1, 5]
+            id = 17; // next in [0, 1, 3, 4]
+            if (next === 0 || next === 3) angle = 300;
+            else if (next === 2 || next === 5) id = 18;
+        } else if (previous === 0) {
+            id = 19; // next in [1, 5]
             if (next === 1) {
                 angle = 120;
             } else if (next === 2) {
@@ -405,7 +403,7 @@ class Grid {
                 angle = 60;
             }
         } else if (previous === 1) {
-            id = 19; // avec un prochain étant un voisin in [0, 2]
+            id = 19; // next in [0, 2]
             if (next === 0) {
                 angle = 120;
             } else if (next === 2) {
@@ -415,11 +413,11 @@ class Grid {
                 angle = 300;
             } else if (next === 4) {
                 id = 17;
-            } else{
+            } else {
                 id = 22;
             }
         } else if (previous === 2) {
-            id = 21; // avec un prochain étant un voisin in [0, 4]
+            id = 21; // next in [0, 4]
             if (next === 0) {
                 angle = 240;
             } else if (next === 1) {
@@ -431,7 +429,7 @@ class Grid {
                 id = 18;
             }
         } else if (previous === 3) {
-            id = 19; // avec un prochain étant un voisin in [2, 4]
+            id = 19; // next in [2, 4]
             if (next === 0) {
                 id = 17;
                 angle = 300;
@@ -447,7 +445,7 @@ class Grid {
                 angle = 60;
             }
         } else if (previous === 4) {
-            id = 19; // avec un prochain étant un voisin in [3, 5]
+            id = 19; // next in [3, 5]
             if (next === 0) {
                 id = 22;
                 angle = -60;
@@ -459,7 +457,7 @@ class Grid {
                 angle = 300;
             }
         } else {
-            id = 19; // avec un prochain étant un voisin in [1, 5]
+            id = 19; // next in [1, 4]
             if (next === 0) {
                 angle = 60;
             } else if (next === 1) {
@@ -471,11 +469,11 @@ class Grid {
                 angle = 60;
             }
         }
-        if (is_road) id -= 16;
+        if (is_road) id -= 16; // si on dessine de la route, on réutilise la fonction est on décale l'id de l'image
         this.draw_path(deplacement, current.get_y(), this.HEXTILES_PATH, this.get_img_x(id), this.get_img_y(id), angle);
     }
 
-    // Ecriture du nom de ville
+    // Ecriture du nom des villes
     draw_town_name() {
         for (let i = 0; i < this.town.length; i++) {
             let deplacement = this.town[i].get_y() % 2 === 0 ? this.town[i].get_x() * 48 + 24 : this.town[i].get_x() * 48,
@@ -486,7 +484,7 @@ class Grid {
         }
     }
 
-    // Set des routes entre les villes
+    // Set des routes entre toutes les villes
     set_town_path() {
         for (let i = 0; i < this.town.length; i++) {
             let start = this.town[i], end = this.town[i + 1];
@@ -503,7 +501,7 @@ class Grid {
         }
     }
 
-    // Recherche du chemin le moins coûteux
+    // Recherche du chemin le moins coûteux entre une ville de départ et d'arrivé selon l'algo aStart
     town_pathfinding(start, end) {
         let queue = new PriorityQueue(),
             came_from = {},
@@ -513,18 +511,22 @@ class Grid {
         cost_so_far[start.to_string()] = 0;
 
         while (!queue.isEmpty()) {
-            let current = queue.dequeue().element;
-            if (current.to_string() === end.to_string()) {
-                while (current !== start) {
+            let current = queue.dequeue().element; // on recupere le dernier élément de la queue
+            if (current.to_string() === end.to_string()) { // On est arrivé à la ville d'arrivée
+                while (current !== start) { // Parcours du chemin de l'arrivée vers le départ
+                    // on ajoute toutes les tuiles du chemin à l'array contetant les tuiles de routes
                     this.town_path.push(current);
                     current = came_from[current.to_string()];
                 }
                 return;
             }
             let neighbors = current.get_neighbors();
+            // parcours des voisins pour trouver celui avec le coût le plus faible
             for (let i = 0; i < neighbors.length; i++) {
                 let next = neighbors[i],
                     new_cost = cost_so_far[current.to_string()] + this.get_cost(next);
+                // si le voisin n'est pas déjà dans le chemin, qu'il n'est pas de la mer ou du littoral
+                // et qu'il a un coût inférieur à la tuile courante
                 if ((cost_so_far[next.to_string()] === undefined || new_cost < cost_so_far[next.to_string()]) &&
                     next.isNotSeaOrLittoral()) {
                     cost_so_far[next.to_string()] = new_cost;
@@ -537,19 +539,18 @@ class Grid {
     }
 
     heuristic(a, b) {
-        // Manhattan distance sur un grille carré
+        // Manhattan distance sur une grille carré
         return Math.abs(a.get_x() - b.get_x()) + Math.abs(a.get_y() - b.get_y());
     }
 
-    // Calcul du coût
+    // Calcul du coût pour une tuile
     get_cost(tile) {
         let id = tile.get_image_id(),
             h = tile.get_humidity();
         if (id === 0 || id === 16 || id === 24 || id === 14) {
             if (h === 200) return 5; // Cas où on est sur une rivière
             return 1;
-        }
-        else if (id === 1 || id === 13 || id === 26 || id === 17) return 2;
+        } else if (id === 1 || id === 13 || id === 26 || id === 17) return 2;
         else if (id === 2 || id === 12 || id === 18) return 3;
         else if (id === 3 || id === 4 || id === 19 || id === 20 || id === 25) return 4;
         else return 100;
@@ -573,6 +574,7 @@ class Grid {
     }
 
 
+    // dessin de la grille entière sans les assets, rivieres et routes
     draw_grid = (x, y) => {
         let deplacement = y % 2 === 0 ? x * 48 + 24 : x * 48,
             tile = this.grid[y][x];
